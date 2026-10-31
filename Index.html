@@ -56,6 +56,30 @@
       overflow-x: hidden;
     }
 
+
+    @keyframes ffk-marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .ffk-announcement-marquee { display:inline-flex; white-space:nowrap; width:max-content; animation:ffk-marquee 32s linear infinite; }
+    .ffk-announcement-marquee:hover { animation-play-state:paused; }
+    /* Independent dashboard scroll regions: the document itself stays locked. */
+    body.admin-mode { overflow: hidden !important; height: 100vh; }
+    body.admin-mode #app-viewport { height: 100vh; min-height: 0; overflow: hidden; }
+    .admin-shell { height: 100vh; width: 100%; display: flex; gap: 0; overflow: hidden; background: #f8fafc; }
+    .admin-sidebar { flex: 0 0 280px; width: 280px; height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; transition: width .2s ease, flex-basis .2s ease; }
+    .admin-sidebar.is-collapsed { flex-basis: 76px; width: 76px; }
+    .admin-sidebar.is-collapsed .admin-label, .admin-sidebar.is-collapsed .admin-user-meta { display:none !important; }
+    .admin-sidebar.is-collapsed .admin-icon-only { display:inline !important; }
+    .admin-sidebar.is-collapsed button { text-align:center; padding-left:.35rem!important; padding-right:.35rem!important; }
+    .admin-main-scroll { min-width: 0; flex: 1; height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+    .public-footer-compact { margin-top: .65rem !important; font-size: 10px !important; }
+    .public-footer-compact > div { padding-top: .55rem !important; padding-bottom: .55rem !important; }
+    .public-footer-compact .grid { gap: .5rem !important; }
+    .public-footer-compact .border-t { margin-top: .45rem !important; padding-top: .35rem !important; }
+    .workflow-fullscreen { width:100%; max-width:none!important; min-height:calc(100vh - 72px); padding:1rem clamp(.75rem,2vw,2rem)!important; margin:0!important; }
+    .workflow-fullscreen > .ffk-card { width:100%; min-height:calc(100vh - 104px); border-radius:1rem; }
+    .workflow-fullscreen .workflow-inner { width:100%; max-width:none!important; }
+    #app-viewport:has(.workflow-fullscreen) { width:100%; }
+    @media (max-width: 767px) { .admin-shell { height:100vh; } .admin-sidebar { flex-basis:76px; width:76px; } .admin-sidebar .admin-label,.admin-sidebar .admin-user-meta {display:none!important;} }
+
     /* Royal Purple Gradient Classes */
     .bg-purple-grad {
       background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
@@ -157,7 +181,7 @@
     <!-- Top Skeleton Navbar -->
     <div class="max-w-7xl w-full mx-auto flex items-center justify-between py-3 border-b border-slate-100">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-purple-grad flex items-center justify-center text-white font-display font-bold text-xl shadow-md">FFK</div>
+        
         <div>
           <div class="h-4 w-44 skeleton-shimmer rounded mb-1.5"></div>
           <div class="h-2.5 w-32 skeleton-shimmer rounded"></div>
@@ -176,7 +200,7 @@
       <div class="text-center mb-6">
         <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-semibold tracking-wider uppercase mb-3">
           <span class="w-2 h-2 rounded-full bg-brand-600 animate-ping"></span>
-          Initializing Portal & Syncing Database
+          Preparing Your Portal
         </div>
         <h1 class="font-display text-3xl md:text-4xl font-bold text-slate-900 tracking-wide">
           FREE FIRE <span class="text-brand-600">KALIMPONG</span>
@@ -212,18 +236,21 @@
     </div>
 
     <!-- Bottom Progress Bar -->
-    <div class="max-w-md w-full mx-auto text-center pb-2">
+    <div class="max-w-md w-full mx-auto text-center pb-2 -translate-y-16">
       <div class="w-full h-1.5 bg-brand-100 rounded-full overflow-hidden mb-2">
-        <div id="splash-progress-bar" class="h-full bg-purple-grad transition-all duration-300" style="width: 35%"></div>
+        <div id="splash-progress-bar" class="h-full bg-purple-grad transition-all duration-300" style="width: 0%"></div>
       </div>
-      <p id="splash-status-text" class="text-xs text-slate-400">Connecting to Google Apps Script Web App...</p>
+      <div class="flex items-center justify-center gap-2">
+        <p id="splash-status-text" class="text-xs text-slate-400">Getting things ready...</p>
+        <span id="splash-progress-percent" class="text-xs font-bold text-brand-700 tabular-nums">0%</span>
+      </div>
     </div>
   </div>
 
   <!-- ====================================================================== -->
   <!-- 2. CONNECTION DIAGNOSTIC / API URL BANNER (IF UNCONFIGURED OR OFFLINE) -->
   <!-- ====================================================================== -->
-  <div id="connection-alert-banner" class="hidden bg-brand-900 text-white px-4 py-2.5 text-xs border-b border-brand-700">
+  <div id="connection-alert-banner" hidden class="hidden bg-brand-900 text-white px-4 py-2.5 text-xs border-b border-brand-700">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="px-2 py-0.5 rounded bg-amber-400 text-slate-900 font-bold">BACKEND CONFIG</span>
@@ -274,16 +301,16 @@
             <a href="#/services/team/apply" onclick="navigateTo('/services/team/apply'); return false;" class="block px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700">6. Apply for Team (TMS)</a>
             <a href="#/services/registration/download" onclick="navigateTo('/services/registration/download'); return false;" class="block px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700">7. Download Registration Certificate</a>
             <a href="#/services/team/download" onclick="navigateTo('/services/team/download'); return false;" class="block px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700">8. Download TMS Certificate</a>
+            <a href="#/services/team/changes" onclick="navigateTo('/services/team/changes'); return false;" class="block px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700">9. Team Changes</a>
+            <div class="border-t border-slate-100 mt-1 pt-1">
+              <a href="#/services" onclick="navigateTo('/services'); return false;" class="block px-4 py-2.5 text-xs font-bold text-brand-700 hover:bg-brand-50">View More Services &rarr;</a>
+            </div>
           </div>
         </div>
       </nav>
 
       <!-- Right Action Buttons -->
       <div class="flex items-center gap-2.5">
-        <button onclick="openApiConfigModal()" title="API Connection Settings" class="p-2 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </button>
-
         <button id="header-psc-btn" onclick="handlePscLoginClick()" class="btn-purple-grad px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           <span id="header-psc-btn-label">PSC Login</span>
@@ -311,6 +338,8 @@
         <a href="#/services/team/apply" onclick="navigateTo('/services/team/apply'); toggleMobileDrawer(); return false;" class="block py-1.5 px-3 text-xs text-slate-700 hover:text-brand-700">6. Apply for Team</a>
         <a href="#/services/registration/download" onclick="navigateTo('/services/registration/download'); toggleMobileDrawer(); return false;" class="block py-1.5 px-3 text-xs text-slate-700 hover:text-brand-700">7. Download Registration Certificate</a>
         <a href="#/services/team/download" onclick="navigateTo('/services/team/download'); toggleMobileDrawer(); return false;" class="block py-1.5 px-3 text-xs text-slate-700 hover:text-brand-700">8. Download TMS Certificate</a>
+        <a href="#/services/team/changes" onclick="navigateTo('/services/team/changes'); toggleMobileDrawer(); return false;" class="block py-1.5 px-3 text-xs text-slate-700 hover:text-brand-700">9. Team Changes</a>
+        <a href="#/services" onclick="navigateTo('/services'); toggleMobileDrawer(); return false;" class="block py-2 px-3 mt-2 rounded-lg bg-brand-50 text-xs font-bold text-brand-700">View More Services &rarr;</a>
       </div>
     </div>
   </header>
@@ -323,8 +352,8 @@
   <!-- ====================================================================== -->
   <!-- 5. PUBLIC FOOTER                                                       -->
   <!-- ====================================================================== -->
-  <footer id="public-footer" class="bg-white border-t border-slate-200 mt-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <footer id="public-footer" class="public-footer-compact bg-white border-t border-slate-200 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <div class="flex items-center gap-2.5 mb-3">
@@ -372,7 +401,7 @@
     <div class="bg-white rounded-2xl p-6 shadow-2xl border border-purple-100 max-w-xs w-full text-center">
       <div class="w-11 h-11 rounded-full border-4 border-brand-100 border-t-brand-600 animate-spin mx-auto mb-3"></div>
       <h4 id="global-loader-title" class="text-sm font-bold text-slate-800">Processing Request...</h4>
-      <p id="global-loader-sub" class="text-xs text-slate-500 mt-1">Communicating with Google Apps Script backend</p>
+      <p id="global-loader-sub" class="text-xs text-slate-500 mt-1">Please wait while we complete your request.</p>
     </div>
   </div>
 
@@ -410,7 +439,7 @@
       currentUser: null,
       // Verified OTP tokens per workflow
       otpTokens: {
-        REGISTRATION_APPLY: { email: '', verifiedToken: '' },
+        REGISTRATION_APPLY: { email: '', verifiedToken: '', otpSent: false },
         REGISTRATION_CORRECTION: { email: '', verifiedToken: '', regNo: '' },
         DELETION_REQUEST: { email: '', verifiedToken: '' },
         STATUS_CHECK: { email: '', verifiedToken: '' },
@@ -548,13 +577,13 @@
 
     async function callBackendApi(action, payload = {}, options = { showLoader: true, loaderTitle: 'Processing...' }) {
       if (!isApiUrlConfigured()) {
-        document.getElementById('connection-alert-banner').classList.remove('hidden');
+        document.getElementById('connection-alert-banner').hidden = true;
         showToast('Backend Web App URL is not configured. Click "Set Web App URL" at the top.', 'error');
         throw new Error('API_BASE_URL is not configured with a valid Google Apps Script Web App URL.');
       }
 
       if (options.showLoader) {
-        showGlobalLoader(options.loaderTitle || 'Processing Request...', 'Action: ' + action);
+        showGlobalLoader(options.loaderTitle || 'Please wait...');
       }
 
       const requestBody = Object.assign({}, payload, {
@@ -611,59 +640,64 @@
     window.addEventListener('DOMContentLoaded', async () => {
       const progressBar = document.getElementById('splash-progress-bar');
       const statusText = document.getElementById('splash-status-text');
+      const percentText = document.getElementById('splash-progress-percent');
+      let progress = 4;
+      let finished = false;
 
-      // Check if user passed ?api=... in URL query string for quick testing
+      const paintProgress = (value, label) => {
+        progress = Math.max(progress, Math.min(100, value));
+        progressBar.style.width = progress + '%';
+        percentText.textContent = Math.round(progress) + '%';
+        if (label) statusText.textContent = label;
+      };
+
+      // Smooth visual progress while the portal prepares its public content.
+      const progressTimer = setInterval(() => {
+        if (finished) return;
+        const next = progress < 35 ? progress + 7 : progress < 68 ? progress + 3 : progress < 88 ? progress + 1 : progress;
+        paintProgress(next, next < 35 ? 'Loading portal resources...' : next < 68 ? 'Preparing pages and services...' : 'Almost ready...');
+      }, 180);
+
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('api')) {
-        API_BASE_URL = urlParams.get('api').trim();
-      }
-
-      progressBar.style.width = '65%';
+      if (urlParams.get('api')) API_BASE_URL = urlParams.get('api').trim();
 
       if (isApiUrlConfigured()) {
-        statusText.textContent = 'Syncing live CMS & Settings from Google Sheets...';
         try {
           const res = await callBackendApi('getPublicContent', {}, { showLoader: false });
           if (res && res.success && res.data) {
             APP_STATE.backendConnected = true;
             APP_STATE.publicContent = Object.assign(APP_STATE.publicContent, res.data);
             applyBrandingToFooter();
-            document.getElementById('connection-alert-banner').classList.add('hidden');
           }
         } catch (e) {
-          document.getElementById('connection-alert-banner').classList.remove('hidden');
-          document.getElementById('connection-alert-msg').textContent = 'Could not reach configured Apps Script URL: ' + e.message;
+          // Keep the public portal usable with its built-in content if the service is unavailable.
+          APP_STATE.backendConnected = false;
         }
-      } else {
-        statusText.textContent = 'Ready (Awaiting Google Apps Script /exec URL configuration)...';
-        document.getElementById('connection-alert-banner').classList.remove('hidden');
       }
 
-      progressBar.style.width = '100%';
-
-      // Route handling
       window.addEventListener('hashchange', () => {
         const hashRoute = window.location.hash.replace(/^#/, '') || '/';
         renderRoute(hashRoute);
       });
 
-      const initialRoute = window.location.hash.replace(/^#/, '') || '/';
+      // Every full page refresh starts at the public home page, not the last private route.
+      window.history.replaceState(null, '', window.location.pathname + window.location.search + '#/');
+      const initialRoute = '/';
       renderRoute(initialRoute);
 
-      // Smoothly dismiss Skeleton Splash Screen
+      finished = true;
+      clearInterval(progressTimer);
+      paintProgress(100, 'Ready!');
       setTimeout(() => {
         const splash = document.getElementById('splash-skeleton-screen');
         splash.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => splash.classList.add('hidden'), 500);
-      }, 650);
+      }, 350);
 
-      // Close Services Dropdown when clicking outside
       document.addEventListener('click', (e) => {
         const container = document.getElementById('services-dropdown-container');
         const menu = document.getElementById('services-dropdown-menu');
-        if (container && menu && !container.contains(e.target)) {
-          menu.classList.add('hidden');
-        }
+        if (container && menu && !container.contains(e.target)) menu.classList.add('hidden');
       });
     });
 
@@ -712,7 +746,7 @@
         const res = await callBackendApi('healthCheck', {}, { showLoader: true, loaderTitle: 'Testing Backend Connection...' });
         if (res && res.success) {
           APP_STATE.backendConnected = true;
-          document.getElementById('connection-alert-banner').classList.add('hidden');
+          document.getElementById('connection-alert-banner').hidden = true;
           showToast('Connected! ' + res.message, 'success');
           const cmsRes = await callBackendApi('getPublicContent', {}, { showLoader: false });
           if (cmsRes && cmsRes.success) {
@@ -724,7 +758,7 @@
           showToast('Health check returned an error: ' + (res ? res.message : 'Unknown'), 'error');
         }
       } catch (e) {
-        document.getElementById('connection-alert-banner').classList.remove('hidden');
+        document.getElementById('connection-alert-banner').hidden = true;
       }
     }
 
@@ -735,7 +769,7 @@
      */
     function showGlobalLoader(title, sub) {
       document.getElementById('global-loader-title').textContent = title || 'Processing...';
-      document.getElementById('global-loader-sub').textContent = sub || 'Please wait...';
+      document.getElementById('global-loader-sub').textContent = 'Please wait while we securely complete your request.';
       document.getElementById('global-api-loader').classList.remove('hidden');
     }
 
@@ -871,6 +905,12 @@
 
     function renderRoute(route) {
       APP_STATE.currentRoute = route;
+      const isAdminShell = ['/admin','/official'].includes(route);
+      document.body.classList.toggle('admin-mode', isAdminShell);
+      const publicHeader = document.getElementById('public-header');
+      const publicFooter = document.getElementById('public-footer');
+      if (publicHeader) publicHeader.classList.toggle('hidden', isAdminShell);
+      if (publicFooter) publicFooter.classList.toggle('hidden', isAdminShell);
       const viewport = document.getElementById('app-viewport');
       updateHeaderAuthButton();
 
@@ -904,6 +944,9 @@
           break;
         case '/services/team/apply':
           viewport.innerHTML = renderTeamApplyPage();
+          break;
+        case '/services/team/changes':
+          viewport.innerHTML = renderTeamChangesPage();
           break;
         case '/services/registration/download':
           viewport.innerHTML = renderCertificateDownloadPage('REGISTRATION');
@@ -963,6 +1006,12 @@
       const pdfs = APP_STATE.publicContent.publicPdfs || [];
 
       return `
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" aria-label="Latest announcements">
+          <div class="flex items-center gap-3 overflow-hidden rounded-xl border border-purple-200 bg-white shadow-sm px-3 py-2.5">
+            <span class="shrink-0 inline-flex items-center gap-2 rounded-lg bg-purple-grad px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-white"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a2 2 0 0 0 2 2h2l9 5V4l-9 5H5a2 2 0 0 0-2 2Z"/><path d="M7 15l1.5 5h3L10 15M18 9l3-2M18 15l3 2"/></svg> Updates</span>
+            <div class="min-w-0 flex-1 overflow-hidden"><div class="ffk-announcement-marquee">${announcements.length ? announcements.map(a => `<span class="mx-8 text-xs font-semibold text-slate-700">${escapeHtml(a.title || a.message || 'Official portal update')}</span>`).join('') : '<span class="mx-8 text-xs font-semibold text-slate-600">Welcome to the FREE FIRE KALIMPONG official portal. Check here for service updates and notices.</span>'}</div></div>
+          </div>
+        </section>
         <!-- Hero Slider Section -->
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
           <div class="relative rounded-3xl overflow-hidden shadow-xl border border-purple-200 bg-brand-900 min-h-[340px] md:min-h-[400px] flex items-center">
@@ -1007,7 +1056,7 @@
               <h2 class="font-display text-2xl font-bold text-slate-900">Quick-Access Services</h2>
               <p class="text-xs text-slate-500">Select an official player or team service below</p>
             </div>
-            <button onclick="navigateTo('/services')" class="text-xs font-bold text-brand-600 hover:text-brand-800">View All 8 Services &rarr;</button>
+            <button onclick="navigateTo('/services')" class="text-xs font-bold text-brand-600 hover:text-brand-800">View All 9 Services &rarr;</button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1122,24 +1171,22 @@
      */
     function renderAboutPage() {
       return `
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div class="ffk-card p-8">
-            <span class="text-xs font-bold uppercase tracking-wider text-brand-600">About the Community</span>
-            <h1 class="font-display text-3xl font-bold text-slate-900 mt-1 mb-4">FREE FIRE KALIMPONG</h1>
-            <p class="text-sm text-slate-600 leading-relaxed mb-6">
-              <strong>FREE FIRE KALIMPONG</strong> is the official regional esports player registration and team governance body for Kalimpong. We provide verified digital identity certificates for Free Fire athletes, prevent UID impersonation, and empower tournament squads through the Team Management System (TMS).
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-6">
-              <div class="p-5 rounded-2xl bg-brand-50 border border-brand-100">
-                <h3 class="font-display font-bold text-lg text-brand-800 mb-1">Our Mission</h3>
-                <p class="text-xs text-slate-600 leading-relaxed">To establish a transparent, fair, and officially verified player and squad ecosystem across Kalimpong district.</p>
-              </div>
-              <div class="p-5 rounded-2xl bg-brand-50 border border-brand-100">
-                <h3 class="font-display font-bold text-lg text-brand-800 mb-1">Strict Screenshot Privacy Rule</h3>
-                <p class="text-xs text-slate-600 leading-relaxed">In-game screenshots are used strictly for reviewer verification and are permanently deleted from Google Drive immediately after approval.</p>
-              </div>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 space-y-7">
+          <section class="relative overflow-hidden rounded-3xl bg-purple-grad p-8 md:p-12 text-white shadow-xl">
+            <div class="absolute -right-12 -top-16 w-64 h-64 rounded-full border-[28px] border-white/10"></div>
+            <div class="relative max-w-3xl">
+              <span class="inline-flex px-3 py-1 rounded-full bg-white/15 text-[11px] font-bold uppercase tracking-[.18em]">About the Community</span>
+              <h1 class="font-display text-3xl md:text-5xl font-bold mt-4">FREE FIRE KALIMPONG</h1>
+              <p class="text-sm md:text-base text-purple-100 leading-relaxed mt-4">An official regional esports player registration and team governance portal for Kalimpong, built to support verified player identities, accountable team records, and a more transparent competitive community.</p>
+              <button onclick="navigateTo('/services')" class="mt-6 bg-white text-brand-800 px-5 py-3 rounded-xl text-xs font-bold shadow hover:bg-purple-50">Explore Portal Services</button>
             </div>
-          </div>
+          </section>
+          <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="ffk-card p-6"><div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center text-xl mb-4">◎</div><h2 class="font-display text-lg font-bold text-slate-900">Our Mission</h2><p class="text-xs text-slate-600 leading-relaxed mt-2">To establish a transparent, fair, and officially verified player and squad ecosystem across Kalimpong district.</p></div>
+            <div class="ffk-card p-6"><div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center text-xl mb-4">✓</div><h2 class="font-display text-lg font-bold text-slate-900">Verified Records</h2><p class="text-xs text-slate-600 leading-relaxed mt-2">Player registration and Team Management System records help organize identities and team membership for official esports administration.</p></div>
+            <div class="ffk-card p-6"><div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center text-xl mb-4">⌑</div><h2 class="font-display text-lg font-bold text-slate-900">Privacy & Review</h2><p class="text-xs text-slate-600 leading-relaxed mt-2">Submitted in-game screenshots are used for reviewer verification and, under the portal's stated policy, deleted from Google Drive after approval.</p></div>
+          </section>
+          <section class="ffk-card p-7 md:p-9"><h2 class="font-display text-2xl font-bold text-slate-900">A clear process for players and teams</h2><p class="text-sm text-slate-600 leading-relaxed mt-3">The portal brings together player registration, team applications, certificate verification, status tracking, correction requests, and support. Public services are available from the Services directory, while authorized users access role-based dashboards through PSC Login.</p><div class="flex flex-wrap gap-3 mt-6"><button onclick="navigateTo('/services')" class="btn-purple-grad px-5 py-3 rounded-xl text-xs font-bold">Browse Services</button><button onclick="navigateTo('/contact')" class="border border-brand-200 text-brand-700 px-5 py-3 rounded-xl text-xs font-bold hover:bg-brand-50">Contact Support</button></div></section>
         </div>
       `;
     }
@@ -1149,11 +1196,16 @@
       const officials = APP_STATE.publicContent.officials || [];
 
       return `
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 space-y-7">
+          <section class="rounded-3xl bg-purple-grad p-7 md:p-9 text-white shadow-lg">
+            <span class="text-xs font-bold uppercase tracking-[.18em] text-purple-100">We are here to help</span>
+            <h1 class="font-display text-3xl md:text-4xl font-bold mt-2">Contact Us</h1>
+            <p class="text-sm text-purple-100 mt-2 max-w-2xl">Have a question about registration, certificates, team records, or portal access? Reach the support team or submit a ticket below.</p>
+          </section>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Contact Details -->
             <div class="ffk-card p-6 space-y-4">
-              <h2 class="font-display text-2xl font-bold text-slate-900">Official Contact Info</h2>
+              <h2 class="font-display text-2xl font-bold text-slate-900">Reach Our Team</h2>
               <div class="p-4 rounded-xl bg-brand-50 border border-brand-100">
                 <div class="text-[11px] font-bold uppercase text-brand-700">Office Address</div>
                 <div class="text-xs text-slate-700 mt-1">${escapeHtml(b.contactAddress || 'Main Road, Kalimpong, West Bengal - 734301')}</div>
@@ -1169,9 +1221,8 @@
             </div>
 
             <!-- Contact Ticket Form -->
-            <div class="lg:col-span-2 ffk-card p-6">
-              <h2 class="font-display text-2xl font-bold text-slate-900 mb-1">Submit a Support Ticket</h2>
-              <p class="text-xs text-slate-500 mb-5">Messages are saved directly to Google Sheets and assigned a Ticket Reference.</p>
+            <div class="lg:col-span-2 ffk-card p-6 md:p-8">
+              <div class="flex items-start justify-between gap-4 mb-5"><div><h2 class="font-display text-2xl font-bold text-slate-900 mb-1">Send us a message</h2><p class="text-xs text-slate-500">Submit a support ticket and keep the ticket reference for follow-up.</p></div><span class="hidden sm:inline-flex rounded-full bg-brand-50 text-brand-700 px-3 py-1 text-[10px] font-bold">SUPPORT DESK</span></div>
               <form onsubmit="submitContactForm(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-700 mb-1">Your Name *</label>
@@ -1257,20 +1308,76 @@
 
     function renderServicesDirectoryPage() {
       return `
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div class="mb-6">
-            <span class="text-xs font-bold uppercase text-brand-600">Complete Portal Catalog</span>
-            <h1 class="font-display text-3xl font-bold text-slate-900">All 8 Official Services</h1>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
+          <div class="rounded-3xl bg-purple-grad p-7 md:p-9 text-white mb-7 shadow-lg">
+            <span class="text-xs font-bold uppercase tracking-[.18em] text-purple-100">Complete Portal Catalog</span>
+            <h1 class="font-display text-3xl md:text-4xl font-bold mt-2">Official Services</h1>
+            <p class="text-sm text-purple-100 mt-2 max-w-2xl">Find the service you need. Search by service name or a keyword to quickly locate the right portal facility.</p>
+            <div class="mt-6 relative max-w-2xl">
+              <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m16 16 4 4" stroke-width="2" stroke-linecap="round"/></svg>
+              <input id="service-search" type="search" oninput="filterPortalServices(this.value)" class="w-full rounded-2xl bg-white/95 text-slate-800 placeholder:text-slate-400 border border-white/50 py-4 pl-12 pr-4 text-sm shadow-inner focus:outline-none focus:ring-4 focus:ring-purple-200" placeholder="Search services... e.g. registration, team, certificate" autocomplete="off" />
+            </div>
+            <p class="text-[11px] text-purple-100 mt-3">9 services available · Search updates instantly</p>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            ${renderQuickCard('1. Apply for Registration', 'New Player Registration Certificate application.', '/services/registration/apply', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z')}
-            ${renderQuickCard('2. Certificate Correction', 'Modify permitted details or remove additional profiles.', '/services/registration/correction', 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5')}
-            ${renderQuickCard('3. Verify Certificate', 'Public verification of Player or Team certificates.', '/services/certificate-verification', 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944')}
-            ${renderQuickCard('4. Deletion Request', 'Submit a verified request to delete a certificate or team.', '/services/deletion-request', 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7')}
-            ${renderQuickCard('5. Status Check', 'Track application status and 5-day auto-cleanup timer.', '/services/status-check', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7')}
-            ${renderQuickCard('6. Apply for Team (TMS)', 'Create an official Kalimpong squad with validated members.', '/services/team/apply', 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7')}
-            ${renderQuickCard('7. Download Registration PDF', 'Generate & download your A4 Player Registration Certificate.', '/services/registration/download', 'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5')}
-            ${renderQuickCard('8. Download TMS PDF', 'Generate & download your A4 Team Management Certificate.', '/services/team/download', 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2')}
+          <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div class="service-item" data-service-search="registration player certificate apply new player"><!-- card -->${renderQuickCard('1. Apply for Registration', 'New Player Registration Certificate application.', '/services/registration/apply', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z')}</div>
+            <div class="service-item" data-service-search="correction modify details remove profile"><!-- card -->${renderQuickCard('2. Certificate Correction', 'Modify permitted details or remove additional profiles.', '/services/registration/correction', 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5')}</div>
+            <div class="service-item" data-service-search="verify verification certificate player team"><!-- card -->${renderQuickCard('3. Verify Certificate', 'Public verification of Player or Team certificates.', '/services/certificate-verification', 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944')}</div>
+            <div class="service-item" data-service-search="deletion delete remove request"><!-- card -->${renderQuickCard('4. Deletion Request', 'Submit a verified request to delete a certificate or team.', '/services/deletion-request', 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7')}</div>
+            <div class="service-item" data-service-search="status check track application"><!-- card -->${renderQuickCard('5. Status Check', 'Track application status and 5-day auto-cleanup timer.', '/services/status-check', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7')}</div>
+            <div class="service-item" data-service-search="team apply tms squad management"><!-- card -->${renderQuickCard('6. Apply for Team (TMS)', 'Create an official Kalimpong squad with validated members.', '/services/team/apply', 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7')}</div>
+            <div class="service-item" data-service-search="download registration pdf player certificate"><!-- card -->${renderQuickCard('7. Download Registration PDF', 'Generate & download your A4 Player Registration Certificate.', '/services/registration/download', 'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5')}</div>
+            <div class="service-item" data-service-search="download tms pdf team certificate"><!-- card -->${renderQuickCard('8. Download TMS PDF', 'Generate & download your A4 Team Management Certificate.', '/services/team/download', 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2')}</div>
+            <div class="service-item" data-service-search="team changes update members team details"><!-- card -->${renderQuickCard('9. Team Changes', 'Find guidance for updating your registered team details or membership.', '/services/team/changes', 'M16 4h2a2 2 0 012 2v2M8 20H6a2 2 0 01-2-2v-2m14-8l-6 6-3-3')}</div>
+          </div>
+          <div id="services-empty" class="hidden ffk-card p-10 text-center mt-5"><svg class="w-9 h-9 mx-auto mb-2 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg><h3 class="font-bold text-slate-800">No matching services</h3><p class="text-xs text-slate-500 mt-1">Try another keyword, such as team, certificate, or registration.</p></div>
+        </div>
+      `;
+    }
+
+    function filterPortalServices(query) {
+      const term = (query || '').trim().toLowerCase();
+      const cards = Array.from(document.querySelectorAll('#services-grid .service-item'));
+      let visible = 0;
+      cards.forEach(card => {
+        const match = !term || (card.dataset.serviceSearch || '').includes(term) || card.textContent.toLowerCase().includes(term);
+        card.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      const empty = document.getElementById('services-empty');
+      if (empty) empty.classList.toggle('hidden', visible !== 0);
+    }
+
+    function renderTeamChangesPage() {
+      const email = (APP_STATE.publicContent.branding || {}).contactEmail || 'support@freefirekalimpong.in';
+      return `
+        <div class="workflow-fullscreen">
+          <div class="ffk-card overflow-hidden">
+            <div class="bg-purple-grad p-7 text-white">
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-100">Official Team Service</span>
+              <h1 class="font-display text-3xl font-bold mt-1">Team Changes</h1>
+              <p class="text-sm text-purple-100 mt-2">Request an update to an already registered Team Management System (TMS) record.</p>
+            </div>
+            <div class="p-7 space-y-5">
+              <div class="rounded-xl bg-brand-50 border border-brand-100 p-4">
+                <h2 class="font-bold text-sm text-brand-900 mb-1">What this service is for</h2>
+                <p class="text-xs leading-relaxed text-slate-600">Use this service when your registered team needs a change to its team details or member list. Include your existing TMS number and a clear description of every requested change.</p>
+              </div>
+              <div>
+                <h2 class="font-display text-xl font-bold text-slate-900 mb-2">How to request a team change</h2>
+                <ol class="list-decimal pl-5 space-y-2 text-xs text-slate-600 leading-relaxed">
+                  <li>Keep your current TMS certificate or TMS number ready.</li>
+                  <li>Write the exact details that need to be changed and the reason.</li>
+                  <li>Contact the portal support team from the registered team head's email address.</li>
+                  <li>Wait for verification and an official response before treating the change as approved.</li>
+                </ol>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a href="mailto:${escapeHtml(email)}?subject=${encodeURIComponent('Team Changes Request')}" class="btn-purple-grad inline-flex items-center justify-center px-5 py-3 rounded-xl text-xs font-bold">Email Team Changes Request</a>
+                <button onclick="navigateTo('/services/team/download')" class="px-5 py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50">Download TMS Certificate</button>
+              </div>
+              <p class="text-[11px] text-slate-400">Note: This page provides the request route and guidance. Final approval and record updates must be completed by an authorized portal administrator.</p>
+            </div>
           </div>
         </div>
       `;
@@ -1298,6 +1405,24 @@
      * Preview Modal, Optional Team Validation, Terms, & 12-Digit Tracking ID
      * ========================================================================
      */
+    let REGISTRATION_CAPTCHA_ANSWER = 0;
+    let REGISTRATION_CAPTCHA_CHALLENGE = '';
+    let LAST_TEXT_CAPTCHA = '';
+    function makeFreshTextCaptcha() {
+      let challenge = '', answer = 0, tries = 0;
+      do {
+        const a = Math.floor(Math.random() * 19) + 2;
+        const b = Math.floor(Math.random() * 12) + 1;
+        const op = Math.random() < 0.5 ? '+' : '-';
+        const left = op === '-' ? Math.max(a,b) : a;
+        const right = op === '-' ? Math.min(a,b) : b;
+        answer = op === '+' ? left + right : left - right;
+        challenge = `What is ${left} ${op} ${right}?`;
+        tries++;
+      } while (challenge === LAST_TEXT_CAPTCHA && tries < 10);
+      LAST_TEXT_CAPTCHA = challenge;
+      return { challenge, answer };
+    }
     function renderRegistrationApplyPage() {
       const otpState = APP_STATE.otpTokens.REGISTRATION_APPLY;
       const d = APP_STATE.regDraft;
@@ -1305,9 +1430,13 @@
 
       // Step 0: Email OTP Verification Gate (Part 4.1)
       if (!otpState.verifiedToken) {
+        const freshCaptcha = makeFreshTextCaptcha();
+        REGISTRATION_CAPTCHA_ANSWER = freshCaptcha.answer;
+        REGISTRATION_CAPTCHA_CHALLENGE = freshCaptcha.challenge;
+        const otpRequested = !!(otpState.email && otpState.otpSent);
         return `
-          <div class="max-w-lg mx-auto px-4 pt-10">
-            <div class="ffk-card overflow-hidden">
+          <div class="registration-email-gate w-full max-w-xl mx-auto px-4 py-8 md:py-12">
+            <div class="ffk-card overflow-hidden shadow-xl">
               <div class="bg-purple-grad p-6 text-white">
                 <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Step 1 of Registration</span>
                 <h1 class="font-display text-2xl font-bold mt-0.5">Email OTP Verification</h1>
@@ -1316,16 +1445,22 @@
               <div class="p-6 space-y-4">
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
-                  <div class="flex gap-2">
-                    <input type="email" id="reg-otp-email" class="ffk-input" placeholder="player@example.com" value="${escapeHtml(otpState.email)}" />
-                    <button onclick="sendWorkflowOtp('REGISTRATION_APPLY', 'reg-otp-email')" class="btn-purple-grad px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap">Send OTP</button>
-                  </div>
+                  <input type="email" id="reg-otp-email" ${otpRequested ? 'readonly' : ''} class="ffk-input" placeholder="player@example.com" value="${escapeHtml(otpState.email || '')}" autocomplete="email" />
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">6-Digit OTP *</label>
-                  <div class="flex gap-2">
-                    <input type="text" id="reg-otp-code" maxlength="6" class="ffk-input tracking-widest font-bold text-center" placeholder="000000" />
-                    <button onclick="verifyWorkflowOtp('REGISTRATION_APPLY', 'reg-otp-email', 'reg-otp-code')" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold whitespace-nowrap">Verify OTP</button>
+                <div class="rounded-xl border border-purple-100 bg-purple-50 p-4">
+                  <label class="block text-[10px] font-extrabold uppercase tracking-wider text-purple-800 mb-2">Text CAPTCHA</label>
+                  <p class="text-sm font-bold text-slate-800 mb-2">${REGISTRATION_CAPTCHA_CHALLENGE}</p>
+                  <input type="text" inputmode="numeric" id="reg-otp-captcha" ${otpRequested ? 'readonly' : ''} class="ffk-input" placeholder="Type the answer" autocomplete="off" />
+                </div>
+                <button id="reg-validate-email-btn" type="button" onclick="sendWorkflowOtp('REGISTRATION_APPLY', 'reg-otp-email')" ${otpRequested ? 'disabled' : ''} class="btn-purple-grad w-full py-3 rounded-xl text-xs font-bold">${otpRequested ? 'Email Validated · OTP Sent' : 'Validate Email & Send OTP'}</button>
+                <div id="reg-otp-entry" class="${otpRequested ? '' : 'hidden'} border-t border-slate-100 pt-4 space-y-3">
+                  <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-xs text-emerald-800">OTP sent. Enter the 6-digit code to unlock registration.</div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">6-Digit OTP *</label>
+                    <div class="flex gap-2">
+                      <input type="text" id="reg-otp-code" maxlength="6" inputmode="numeric" class="ffk-input tracking-widest font-bold text-center" placeholder="000000" />
+                      <button type="button" onclick="verifyWorkflowOtp('REGISTRATION_APPLY', 'reg-otp-email', 'reg-otp-code')" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold whitespace-nowrap">Verify OTP</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1336,7 +1471,7 @@
 
       // Unlocked Multi-Step Registration Form
       return `
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="workflow-fullscreen">
           <div class="ffk-card overflow-hidden">
             <!-- Header & Progress Steps -->
             <div class="bg-purple-grad px-6 py-5 text-white flex flex-wrap items-center justify-between gap-4">
@@ -1517,7 +1652,7 @@
                       <div class="flex flex-wrap items-end gap-3">
                         <div class="flex-1 min-w-[220px]">
                           <label class="block text-xs font-bold text-brand-900 mb-1">Enter Team TMS Number *</label>
-                          <input type="text" id="reg-tms-input" oninput="APP_STATE.regDraft.intendedTmsNumber=this.value.toUpperCase(); APP_STATE.regDraft.validatedTeamInfo=null; renderRoute('/services/registration/apply');" class="ffk-input uppercase" placeholder="FFK-TMS-2026-XXXXXX" value="${escapeHtml(d.intendedTmsNumber)}" />
+                          <input type="text" id="reg-tms-input" oninput="APP_STATE.regDraft.intendedTmsNumber=this.value.toUpperCase(); APP_STATE.regDraft.validatedTeamInfo=null; renderRoute('/services/registration/apply');" class="ffk-input uppercase" placeholder="15-digit numeric TMS number" value="${escapeHtml(d.intendedTmsNumber)}" />
                         </div>
                         <button type="button" onclick="validateRegTeamAssociation()" class="btn-purple-grad px-5 py-2.5 rounded-xl text-xs font-bold">Validate Team</button>
                       </div>
@@ -1561,16 +1696,42 @@
     async function sendWorkflowOtp(purpose, emailInputId) {
       const emailEl = document.getElementById(emailInputId);
       const email = (emailEl ? emailEl.value : '').trim().toLowerCase();
-      if (!email || !email.includes('@')) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         showToast('Please enter a valid email address.', 'warning');
         return;
       }
-      const res = await callBackendApi('sendOtp', { email, purpose }, { showLoader: true, loaderTitle: 'Sending 6-Digit Email OTP...' });
+      if (purpose === 'REGISTRATION_APPLY') {
+        const captcha = (document.getElementById('reg-otp-captcha')?.value || '').trim();
+        if (!captcha || Number(captcha) !== REGISTRATION_CAPTCHA_ANSWER) {
+          showToast('The text CAPTCHA answer is incorrect. Please try again.', 'error');
+          return;
+        }
+        const validateBtn = document.getElementById('reg-validate-email-btn');
+        if (validateBtn) { validateBtn.disabled = true; validateBtn.textContent = 'Validating email...'; }
+      }
+      let res;
+      try {
+        res = await callBackendApi('sendOtp', { email, purpose }, { showLoader: true, loaderTitle: 'Sending email verification code...' });
+      } catch (error) {
+        if (purpose === 'REGISTRATION_APPLY') { const b = document.getElementById('reg-validate-email-btn'); if (b) { b.disabled = false; b.textContent = 'Validate Email & Send OTP'; } }
+        showToast('Unable to send the verification code. Please try again.', 'error');
+        return;
+      }
       if (res && res.success) {
-        APP_STATE.otpTokens[purpose] = { email, verifiedToken: '' };
-        showToast(res.message, 'success');
-      } else if (res) {
-        showToast(res.message, 'error');
+        APP_STATE.otpTokens[purpose] = { email, verifiedToken: '', otpSent: true };
+        if (purpose === 'REGISTRATION_APPLY') {
+          const emailField = document.getElementById('reg-otp-email');
+          const captchaField = document.getElementById('reg-otp-captcha');
+          const validateBtn = document.getElementById('reg-validate-email-btn');
+          if (emailField) emailField.readOnly = true;
+          if (captchaField) captchaField.readOnly = true;
+          if (validateBtn) { validateBtn.disabled = true; validateBtn.textContent = 'Email Validated · OTP Sent'; }
+          document.getElementById('reg-otp-entry')?.classList.remove('hidden');
+        }
+        showToast(res.message || 'Verification code sent to your email.', 'success');
+      } else {
+        if (purpose === 'REGISTRATION_APPLY') { const b = document.getElementById('reg-validate-email-btn'); if (b) { b.disabled = false; b.textContent = 'Validate Email & Send OTP'; } }
+        if (res) showToast(res.message, 'error');
       }
     }
 
@@ -1833,7 +1994,7 @@
 
       if (!cDraft.loadedReg) {
         return `
-          <div class="max-w-xl mx-auto px-4 pt-10">
+          <div class="workflow-fullscreen">
             <div class="ffk-card overflow-hidden">
               <div class="bg-purple-grad p-6 text-white">
                 <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Official Service #2</span>
@@ -1844,7 +2005,7 @@
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Registration Number *</label>
                   <div class="flex gap-2">
-                    <input type="text" id="corr-reg-no" class="ffk-input uppercase" placeholder="FFK-REG-2026-XXXXXX" value="${escapeHtml(otpState.regNo || '')}" />
+                    <input type="text" id="corr-reg-no" class="ffk-input uppercase" placeholder="18-digit numeric registration number" value="${escapeHtml(otpState.regNo || '')}" />
                     <button onclick="initiateCorrectionOtp()" class="btn-purple-grad px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap">Validate & Send OTP</button>
                   </div>
                 </div>
@@ -1867,7 +2028,7 @@
 
       const r = cDraft.loadedReg;
       return `
-        <div class="max-w-5xl mx-auto px-4 pt-8">
+        <div class="workflow-fullscreen">
           <div class="ffk-card overflow-hidden">
             <div class="bg-purple-grad p-6 text-white flex justify-between items-center">
               <div>
@@ -2044,7 +2205,7 @@
      */
     function renderCertificateVerificationPage() {
       return `
-        <div class="max-w-2xl mx-auto px-4 pt-10">
+        <div class="workflow-fullscreen">
           <div class="ffk-card overflow-hidden">
             <div class="bg-purple-grad p-6 text-white">
               <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Official Service #3</span>
@@ -2053,7 +2214,7 @@
             </div>
             <div class="p-6 space-y-5">
               <div class="flex gap-2">
-                <input type="text" id="verify-cert-input" class="ffk-input uppercase font-mono" placeholder="Enter FFK-REG-2026-XXXXXX or FFK-TMS-2026-XXXXXX" />
+                <input type="text" id="verify-cert-input" class="ffk-input uppercase font-mono" placeholder="Enter 18-digit numeric registration number or 15-digit numeric TMS number" />
                 <button onclick="executeCertificateVerification()" class="btn-purple-grad px-6 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap">Verify Certificate</button>
               </div>
               <div id="verify-cert-result-box"></div>
@@ -2094,7 +2255,7 @@
      */
     function renderDeletionRequestPage() {
       return `
-        <div class="max-w-2xl mx-auto px-4 pt-10">
+        <div class="workflow-fullscreen">
           <div class="ffk-card overflow-hidden">
             <div class="bg-purple-grad p-6 text-white">
               <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Official Service #4</span>
@@ -2199,7 +2360,7 @@
      */
     function renderStatusCheckPage() {
       return `
-        <div class="max-w-5xl mx-auto px-4 pt-10 space-y-6">
+        <div class="workflow-fullscreen space-y-6">
           <div class="ffk-card overflow-hidden">
             <div class="bg-purple-grad p-6 text-white">
               <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Official Service #5</span>
@@ -2336,7 +2497,7 @@
 
       if (!otpState.verifiedToken) {
         return `
-          <div class="max-w-lg mx-auto px-4 pt-10">
+          <div class="workflow-fullscreen">
             <div class="ffk-card overflow-hidden">
               <div class="bg-purple-grad p-6 text-white">
                 <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Official Service #6</span>
@@ -2365,7 +2526,7 @@
       }
 
       return `
-        <div class="max-w-5xl mx-auto px-4 pt-8">
+        <div class="workflow-fullscreen">
           <div class="ffk-card overflow-hidden">
             <div class="bg-purple-grad p-6 text-white flex justify-between items-center">
               <div>
@@ -2391,7 +2552,7 @@
                 <div class="sm:col-span-2">
                   <label class="block text-xs font-bold text-slate-700 mb-1">Head of Team Registration Number *</label>
                   <div class="flex gap-2">
-                    <input type="text" id="team-head-reg-input" oninput="APP_STATE.teamDraft.headRegNo=this.value.toUpperCase()" class="ffk-input uppercase font-mono" value="${escapeHtml(td.headRegNo)}" placeholder="FFK-REG-2026-XXXXXX" />
+                    <input type="text" id="team-head-reg-input" oninput="APP_STATE.teamDraft.headRegNo=this.value.toUpperCase()" class="ffk-input uppercase font-mono" value="${escapeHtml(td.headRegNo)}" placeholder="18-digit numeric registration number" />
                     <button onclick="validateHeadOfTeamFlow()" class="btn-purple-grad px-5 py-2 rounded-xl text-xs font-bold">Validate Head</button>
                   </div>
                 </div>
@@ -2479,7 +2640,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Player Registration Number *</label>
             <div class="flex gap-2">
-              <input type="text" id="add-mem-reg-input" class="ffk-input uppercase font-mono" placeholder="FFK-REG-2026-XXXXXX" />
+              <input type="text" id="add-mem-reg-input" class="ffk-input uppercase font-mono" placeholder="18-digit numeric registration number" />
               <button onclick="validateAndAddMemberModal()" class="btn-purple-grad px-5 py-2 rounded-xl text-xs font-bold">Validate & Add</button>
             </div>
           </div>
@@ -2539,7 +2700,7 @@
     function renderCertificateDownloadPage(certType) {
       const isTeam = certType === 'TEAM';
       return `
-        <div class="max-w-xl mx-auto px-4 pt-10">
+        <div class="workflow-fullscreen">
           <div class="ffk-card overflow-hidden">
             <div class="bg-purple-grad p-6 text-white">
               <span class="text-[11px] uppercase tracking-wider font-bold text-purple-200">Official Service #${isTeam ? '8' : '7'}</span>
@@ -2550,7 +2711,7 @@
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">${isTeam ? 'Official TMS Number' : 'Registration Number'} *</label>
                 <div class="flex gap-2">
-                  <input type="text" id="dl-cert-number" class="ffk-input uppercase font-mono" placeholder="${isTeam ? 'FFK-TMS-2026-XXXXXX' : 'FFK-REG-2026-XXXXXX'}" />
+                  <input type="text" id="dl-cert-number" class="ffk-input uppercase font-mono" placeholder="${isTeam ? '15-digit numeric TMS number' : '18-digit numeric registration number'}" />
                   <button onclick="initiateCertDownloadOtp('${certType}')" class="btn-purple-grad px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap">Validate & Send OTP</button>
                 </div>
               </div>
@@ -2619,36 +2780,105 @@
      * Animated Show/Hide Password + Forgot/Reset Password
      * ========================================================================
      */
+    let LOGIN_CAPTCHA_ANSWER = 0;
+    let LOGIN_VERIFIED_EMAIL = '';
+    let LOGIN_OTP_VERIFIED_TOKEN = '';
+    let LOGIN_PASSWORD_CACHE = '';
+    let LOGIN_CAPTCHA_CHALLENGE = '';
+
     function renderPortalLoginPage() {
+      const freshCaptcha = makeFreshTextCaptcha();
+      LOGIN_CAPTCHA_ANSWER = freshCaptcha.answer;
+      LOGIN_CAPTCHA_CHALLENGE = freshCaptcha.challenge;
+      LOGIN_VERIFIED_EMAIL = '';
+      LOGIN_OTP_VERIFIED_TOKEN = '';
+      LOGIN_PASSWORD_CACHE = '';
       return `
-        <div class="max-w-md mx-auto px-4 pt-12">
-          <div class="ffk-card overflow-hidden shadow-xl">
-            <div class="bg-purple-grad p-6 text-white text-center">
-              <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-2 font-display font-bold text-2xl">PSC</div>
-              <h1 class="font-display text-2xl font-bold">Private Portal Login</h1>
-              <p class="text-xs text-purple-100 mt-1">Super Admin, Administrator, Official, Head of Team & Player Access</p>
-            </div>
-            <form onsubmit="executePortalLogin(event)" class="p-6 space-y-4">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Email or Username *</label>
-                <input type="text" id="login-identifier" required class="ffk-input" placeholder="superadmin or registered email" />
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
-                <div class="relative">
-                  <input type="password" id="login-password" required class="ffk-input pr-16" placeholder="••••••••" />
-                  <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-brand-600 hover:text-brand-800 transition">SHOW</button>
+        <div class="workflow-fullscreen">
+          <div class="max-w-2xl mx-auto w-full">
+            <div class="text-center mb-5"><div class="inline-flex px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-[10px] font-bold tracking-widest">SECURE ACCESS</div><h1 class="font-display text-3xl font-bold text-slate-900 mt-3">PSC Login</h1><p class="text-xs text-slate-500 mt-1">Enter your registered email, password and text CAPTCHA. OTP is sent only after credentials are valid.</p></div>
+            <div class="ffk-card overflow-hidden shadow-xl">
+              <div class="bg-purple-grad p-6 text-white text-center"><h2 class="font-display text-xl font-bold">Secure portal sign in</h2><p class="text-xs text-purple-100 mt-1">Password validation first, email OTP second.</p></div>
+              <div class="p-6 md:p-8 space-y-4">
+                <div><label class="block text-xs font-bold text-slate-700 mb-1">Registered Email Address *</label><input type="email" id="login-email" required class="ffk-input" placeholder="you@example.com" autocomplete="email" /></div>
+                <div><label class="block text-xs font-bold text-slate-700 mb-1">Password *</label><div class="relative"><input type="password" id="login-password" required class="ffk-input pr-16" placeholder="Your portal password" autocomplete="current-password" /><button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-brand-600">SHOW</button></div></div>
+                <div class="rounded-xl border border-brand-100 bg-brand-50 p-4"><p class="text-[10px] font-bold uppercase tracking-wider text-brand-700">Text CAPTCHA</p><p class="text-sm font-bold text-slate-800 mt-1">${LOGIN_CAPTCHA_CHALLENGE}</p><input type="text" inputmode="numeric" id="login-captcha" class="ffk-input mt-3" placeholder="Enter the answer" autocomplete="off" /></div>
+                <button id="login-validate-email-btn" type="button" onclick="validateLoginEmail()" class="btn-purple-grad w-full py-3 rounded-xl text-xs font-bold">Validate Credentials & Send OTP</button>
+                <div id="login-otp-section" class="hidden border-t border-slate-100 pt-4 space-y-3">
+                  <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-xs text-emerald-800">Password accepted. A 6-digit OTP has been sent to your registered email.</div>
+                  <div><label class="block text-xs font-bold text-slate-700 mb-1">6-Digit Email OTP *</label><input type="text" id="login-otp" maxlength="6" inputmode="numeric" class="ffk-input tracking-[.35em] text-center font-bold" placeholder="000000" /></div>
+                  <button type="button" onclick="verifyLoginEmailOtp()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">Verify OTP & Sign In</button>
                 </div>
+                <div class="flex items-center justify-between text-xs pt-1"><button type="button" onclick="openForgotPasswordModal()" class="text-brand-600 hover:underline font-semibold">Forgot / Reset Password?</button><span class="text-[11px] text-slate-400">Protected by RBAC</span></div>
               </div>
-              <button type="submit" class="btn-purple-grad w-full py-3 rounded-xl text-xs font-bold">Sign In to Portal</button>
-              <div class="flex items-center justify-between text-xs pt-2">
-                <button type="button" onclick="openForgotPasswordModal()" class="text-brand-600 hover:underline font-semibold">Forgot / Reset Password?</button>
-                <span class="text-[11px] text-slate-400">Protected by RBAC</span>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       `;
+    }
+
+    async function validateLoginEmail() {
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const captchaInput = document.getElementById('login-captcha');
+      const button = document.getElementById('login-validate-email-btn');
+      const email = (emailInput.value || '').trim().toLowerCase();
+      const password = passwordInput.value || '';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showToast('Enter a valid registered email address.', 'warning');
+      if (!password) return showToast('Enter your portal password.', 'warning');
+      if (String(captchaInput.value).trim() === '' || Number(captchaInput.value) !== LOGIN_CAPTCHA_ANSWER) return showToast('CAPTCHA answer is incorrect. Please try again.', 'error');
+      button.disabled = true;
+      button.textContent = 'Checking email and password...';
+      try {
+        const check = await callBackendApi('validateLoginCredentials', { email, password, userAgent: navigator.userAgent }, { showLoader: true, loaderTitle: 'Validating Login Credentials...' });
+        if (!check || !check.success) {
+          button.disabled = false;
+          button.textContent = 'Validate Credentials & Send OTP';
+          if (check) showToast(check.message || 'Invalid login credentials.', 'error');
+          return;
+        }
+        const otp = await callBackendApi('sendOtp', { email, purpose: 'PORTAL_LOGIN' }, { showLoader: true, loaderTitle: 'Sending Email OTP...' });
+        if (otp && otp.success) {
+          LOGIN_VERIFIED_EMAIL = email;
+          LOGIN_PASSWORD_CACHE = password;
+          emailInput.readOnly = true;
+          passwordInput.readOnly = true;
+          captchaInput.readOnly = true;
+          button.textContent = 'Credentials Validated';
+          document.getElementById('login-otp-section').classList.remove('hidden');
+          showToast(otp.message || 'Password accepted. OTP sent to your email.', 'success');
+        } else {
+          button.disabled = false;
+          button.textContent = 'Validate Credentials & Send OTP';
+          if (otp) showToast(otp.message || 'Could not send OTP.', 'error');
+        }
+      } catch (err) {
+        button.disabled = false;
+        button.textContent = 'Validate Credentials & Send OTP';
+        showToast('Unable to validate credentials. Please try again.', 'error');
+      }
+    }
+
+    async function verifyLoginEmailOtp() {
+      const otp = (document.getElementById('login-otp').value || '').trim();
+      if (!/^\d{6}$/.test(otp)) return showToast('Enter the 6-digit OTP.', 'warning');
+      const res = await callBackendApi('verifyOtp', { email: LOGIN_VERIFIED_EMAIL, otp, purpose: 'PORTAL_LOGIN' }, { showLoader: true, loaderTitle: 'Verifying Email OTP...' });
+      if (res && res.success) {
+        LOGIN_OTP_VERIFIED_TOKEN = (res.data && res.data.verifiedToken) || '';
+        const loginResult = await callBackendApi('login', { identifier: LOGIN_VERIFIED_EMAIL, password: LOGIN_PASSWORD_CACHE, verifiedToken: LOGIN_OTP_VERIFIED_TOKEN, userAgent: navigator.userAgent }, { showLoader: true, loaderTitle: 'Completing Secure Sign In...' });
+        if (loginResult && loginResult.success) {
+          APP_STATE.sessionToken = loginResult.data.sessionToken;
+          APP_STATE.currentUser = loginResult.data.user;
+          LOGIN_PASSWORD_CACHE = '';
+          updateHeaderAuthButton();
+          showToast('Welcome, ' + loginResult.data.user.fullName, 'success');
+          const role = loginResult.data.user.roleId;
+          if (role === 'ROLE_SUPER_ADMIN' || role === 'ROLE_ADMIN') navigateTo('/admin');
+          else if (role === 'ROLE_OFFICIAL') navigateTo('/official');
+          else if (role === 'ROLE_HEAD_OF_TEAM') navigateTo('/team');
+          else navigateTo('/player');
+        } else if (loginResult) showToast(loginResult.message || 'Sign in failed.', 'error');
+      } else if (res) showToast(res.message, 'error');
     }
 
     function togglePasswordVisibility(inputId, btn) {
@@ -2664,12 +2894,14 @@
 
     async function executePortalLogin(e) {
       e.preventDefault();
-      const identifier = document.getElementById('login-identifier').value.trim();
+      const identifier = LOGIN_VERIFIED_EMAIL;
       const password = document.getElementById('login-password').value;
+      if (!identifier || !LOGIN_OTP_VERIFIED_TOKEN) return showToast('Verify your email OTP before signing in.', 'warning');
 
       const res = await callBackendApi('login', {
         identifier,
         password,
+        verifiedToken: LOGIN_OTP_VERIFIED_TOKEN,
         userAgent: navigator.userAgent
       }, { showLoader: true, loaderTitle: 'Authenticating Session...' });
 
@@ -2765,14 +2997,16 @@
       const tab = APP_STATE.adminSubTab || 'OVERVIEW';
 
       return `
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Modern Admin Sidebar -->
-            <aside class="w-full lg:w-64 shrink-0 ffk-card p-4 space-y-1.5 h-fit">
+        <div class="admin-shell">
+          <aside id="admin-sidebar" class="admin-sidebar bg-white border-r border-slate-200 p-3 space-y-2 shadow-sm">
+              <div class="flex items-center justify-between gap-2 px-1 pb-2 border-b border-slate-100">
+                <span class="admin-label text-[11px] font-extrabold uppercase tracking-wider text-purple-800">FFK Control</span>
+                <button type="button" onclick="toggleAdminSidebar()" class="shrink-0 w-9 h-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-purple-50" aria-label="Collapse sidebar"><svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h16M14 8l-3 4 3 4"/></svg></button>
+              </div>
               <div class="p-3 rounded-xl bg-purple-grad text-white mb-3">
-                <div class="text-[10px] uppercase tracking-wider text-purple-200 font-bold">${escapeHtml(u.roleName || 'Administrator')}</div>
-                <div class="font-bold text-sm truncate">${escapeHtml(u.fullName || 'Admin')}</div>
-                <div class="text-[11px] text-purple-200 truncate">${escapeHtml(u.email || '')}</div>
+                <div class="admin-label text-[10px] uppercase tracking-wider text-purple-200 font-bold">${escapeHtml(u.roleName || 'Administrator')}</div>
+                <div class="admin-label font-bold text-sm truncate">${escapeHtml(u.fullName || 'Admin')}</div>
+                <div class="admin-user-meta text-[11px] text-purple-200 truncate">${escapeHtml(u.email || '')}</div>
               </div>
               ${renderAdminTabBtn('OVERVIEW', '1. Overview & 12 Live Stats')}
               ${renderAdminTabBtn('REGISTRATIONS', '2. Registration Queue')}
@@ -2780,20 +3014,18 @@
               ${renderAdminTabBtn('TEAMS', '4. Team Applications')}
               ${renderAdminTabBtn('MEMBERSHIPS', '5. Membership Approval')}
               ${renderAdminTabBtn('DELETIONS', '6. Deletion Requests')}
-              ${renderAdminTabBtn('SCREENSHOT_MONITOR', '7. Screenshot Cleanup Monitor')}
               ${renderAdminTabBtn('OFFICIALS', '8. Official Management')}
               ${renderAdminTabBtn('CMS', '9. Website Content (CMS)')}
               ${renderAdminTabBtn('SETTINGS', '10. Global Settings')}
               <div class="pt-3 border-t border-slate-100">
                 <button onclick="executeLogout()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50">Sign Out</button>
               </div>
-            </aside>
+          </aside>
 
-            <!-- Main Admin Content Panel -->
-            <div class="flex-1 space-y-6" id="admin-main-panel">
-              <div class="ffk-card p-8 text-center text-xs text-slate-400">Loading real-time Google Sheets database records...</div>
-            </div>
-          </div>
+          <!-- Main Admin Content Panel: scrolls independently of the sidebar -->
+          <main class="admin-main-scroll p-4 md:p-6" id="admin-main-panel">
+            <div class="ffk-card p-8 text-center text-xs text-slate-400">Loading dashboard data...</div>
+          </main>
         </div>
       `;
     }
@@ -2801,10 +3033,15 @@
     function renderAdminTabBtn(tabKey, label) {
       const active = APP_STATE.adminSubTab === tabKey;
       return `
-        <button onclick="switchAdminSubTab('${tabKey}')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${active ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'text-slate-600 hover:bg-slate-50'}">
-          ${escapeHtml(label)}
+        <button title="${escapeHtml(label)}" onclick="switchAdminSubTab('${tabKey}')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${active ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'text-slate-600 hover:bg-slate-50'}">
+          <span class="admin-label">${escapeHtml(label)}</span><span class="admin-icon-only hidden">${escapeHtml(label.split('. ')[0])}</span>
         </button>
       `;
+    }
+
+    function toggleAdminSidebar() {
+      const sidebar = document.getElementById('admin-sidebar');
+      if (sidebar) sidebar.classList.toggle('is-collapsed');
     }
 
     function switchAdminSubTab(tabKey) {
@@ -2830,13 +3067,6 @@
         const logs = res.data.recentAuditLogs || [];
 
         panel.innerHTML = `
-          ${s.screenshotDeletionTasksAwaiting > 0 ? `
-            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-900 flex items-center justify-between">
-              <span><strong>Administrator Warning (Part 5.4):</strong> ${s.screenshotDeletionTasksAwaiting} approved application screenshot(s) are awaiting deletion retry.</span>
-              <button onclick="switchAdminSubTab('SCREENSHOT_MONITOR')" class="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold">Open Cleanup Monitor</button>
-            </div>
-          ` : ''}
-
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             ${renderStatCard('Total Registrations', s.totalRegistrations)}
             ${renderStatCard('Active Registrations', s.activeRegistrations)}
@@ -2849,7 +3079,6 @@
             ${renderStatCard('Pending Memberships', s.pendingMembershipRequests)}
             ${renderStatCard('Active Officials', s.activeOfficials)}
             ${renderStatCard('Open Contact Tickets', s.openContactTickets)}
-            ${renderStatCard('Screenshots Awaiting Deletion', s.screenshotDeletionTasksAwaiting)}
           </div>
 
           <div class="ffk-card p-6">
@@ -2876,56 +3105,6 @@
                       <td class="p-2.5 font-bold text-brand-700">${escapeHtml(l.action)}</td>
                       <td class="p-2.5 font-mono">${escapeHtml(l.targetId)}</td>
                       <td class="p-2.5">${escapeHtml(l.previousStatus)} &rarr; <strong>${escapeHtml(l.newStatus)}</strong></td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      if (tab === 'SCREENSHOT_MONITOR') {
-        const monRes = await callBackendApi('getScreenshotCleanupQueue', {}, { showLoader: true, loaderTitle: 'Loading Screenshot Cleanup Monitor...' });
-        if (!monRes || !monRes.success) return;
-        const records = monRes.data.screenshotRecords || [];
-        panel.innerHTML = `
-          <div class="ffk-card p-6 space-y-4">
-            <div>
-              <h2 class="font-display text-xl font-bold text-slate-900">Screenshot Cleanup Monitor (Part 5 & Part 13)</h2>
-              <p class="text-xs text-slate-500">Tracks temporary game-profile screenshots. Once Deletion Completed, files are permanently removed from Google Drive.</p>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr class="bg-brand-50 text-brand-900">
-                    <th class="p-2.5">Document ID</th>
-                    <th class="p-2.5">Related Application</th>
-                    <th class="p-2.5">Filename</th>
-                    <th class="p-2.5">Deletion Status</th>
-                    <th class="p-2.5">Deleted Timestamp</th>
-                    <th class="p-2.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  ${records.map(r => `
-                    <tr>
-                      <td class="p-2.5 font-mono">${escapeHtml(r.documentId)}</td>
-                      <td class="p-2.5 font-mono">${escapeHtml(r.relatedEntityId)}</td>
-                      <td class="p-2.5">${escapeHtml(r.originalFilename)}</td>
-                      <td class="p-2.5">
-                        <span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${r.deletionStatus === 'Deletion Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                          ${escapeHtml(r.deletionStatus)}
-                        </span>
-                      </td>
-                      <td class="p-2.5 font-mono text-[11px]">${escapeHtml(r.deletionTimestamp || '—')}</td>
-                      <td class="p-2.5 text-right space-x-2">
-                        ${r.deletionStatus !== 'Deletion Completed' ? `
-                          <button onclick="previewPrivateDocAdmin('${escapeHtml(r.documentId)}')" class="text-brand-600 font-bold hover:underline">Preview</button>
-                          <button onclick="retryScreenshotDeleteAdmin('${escapeHtml(r.documentId)}', '${escapeHtml(r.relatedEntityId)}')" class="px-2.5 py-1 rounded bg-red-600 text-white font-bold">Force Delete / Retry</button>
-                        ` : `<span class="text-slate-400">Purged</span>`}
-                      </td>
                     </tr>
                   `).join('')}
                 </tbody>
