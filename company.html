@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Offline Billing Software — Company Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#04091a',
+              900: '#081229',
+              800: '#0f1f44',
+              700: '#162d63',
+            },
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Dark Navy Blue & Crisp White Desktop Theme */
+    body {
+      background-color: #f8fafc;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(15, 31, 68, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.04) 0px, transparent 50%);
+      user-select: none;
+    }
+
+    .navy-header {
+      background: linear-gradient(135deg, #04091a 0%, #081229 55%, #0f1f44 100%);
+    }
+
+    .surface-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 12px 30px -12px rgba(8, 18, 41, 0.07), 0 4px 12px -4px rgba(8, 18, 41, 0.03);
+    }
+
+    .company-row {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .company-row::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #081229;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .company-row:hover {
+      border-color: #162d63;
+      box-shadow: 0 18px 36px -14px rgba(8, 18, 41, 0.16), 0 6px 16px -6px rgba(37, 99, 235, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .company-row:hover::before {
+      opacity: 1;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="text-slate-900 min-h-screen flex flex-col justify-between antialiased selection:bg-navy-900 selection:text-white">
+
+  <!-- Deep Navy Blue Top Navigation Bar -->
+  <header class="navy-header text-white border-b border-navy-700/60 px-6 py-3.5 flex items-center justify-between shadow-lg sticky top-0 z-30">
+    <div class="flex items-center gap-3.5">
+      <a href="index.html" title="Return to Database Launcher" class="w-9 h-9 rounded-xl bg-white text-navy-900 flex items-center justify-center shadow-md hover:bg-blue-50 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </a>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-sm tracking-wider uppercase text-white">AR Offline Billing</span>
+          <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-white/10 text-blue-200 border border-white/15">Company Manager</span>
+        </div>
+        <p class="text-[11px] text-blue-200/75">Multi-Company Isolated .VPRS Workspace</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div id="active-target-pill" class="hidden md:flex items-center gap-2 text-xs font-medium px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-white">
+        <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <span class="text-[10px] uppercase tracking-wider font-bold text-blue-200">Active File:</span>
+        <span id="active-target-label" class="font-mono font-semibold text-[11px] truncate max-w-[210px]">None</span>
+      </div>
+
+      <a href="index.html" class="text-xs font-semibold text-navy-900 bg-white hover:bg-blue-50 px-3.5 py-2 rounded-xl transition-colors shadow-sm flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Switch / New File</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 w-full max-w-5xl mx-auto p-6 sm:p-8">
+
+    <!-- Inline Notification / Alert Banner -->
+    <div id="status-banner" class="hidden mb-6 rounded-2xl p-4 border bg-white text-sm flex items-start gap-3 shadow-md transition-all">
+      <div id="status-icon" class="mt-0.5 shrink-0"></div>
+      <div class="flex-1">
+        <h4 id="status-title" class="font-bold text-sm"></h4>
+        <p id="status-message" class="text-xs opacity-90 mt-0.5 leading-relaxed"></p>
+      </div>
+      <button type="button" onclick="hideBanner()" class="text-slate-400 hover:text-slate-700 p-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Unconfigured .VPRS Container Banner -->
+    <div id="pending-container-banner" class="hidden mb-6 rounded-2xl p-5 navy-header text-white shadow-xl border border-navy-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/15 text-blue-200 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-blue-200">Locked &amp; Linked .VPRS File</span>
+            <span id="pending-file-name" class="text-xs font-mono font-semibold text-navy-900 bg-white px-2.5 py-0.5 rounded-md"></span>
+          </div>
+          <p class="text-xs text-blue-100/80 mt-1.5 leading-relaxed">
+            Your database container is locked to this file. Create up to 10 separate companies inside this single <span class="font-mono font-bold text-white">.VPRS</span> file, each with its own isolated data partition.
+          </p>
+        </div>
+      </div>
+      <button type="button" onclick="openCreateCompanyModal()" class="shrink-0 px-5 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-navy-900 text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>+ Create Company</span>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="surface-card rounded-3xl p-12 text-center">
+      <div class="w-9 h-9 border-2 border-navy-900 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-sm font-bold text-navy-900">Reading .VPRS File From Disk...</p>
+      <p class="text-xs text-slate-500 mt-1">Verifying archive header and loading stored company partitions.</p>
+    </div>
+
+    <!-- PERMISSION UNLOCK STATE: Shown if browser requires a click to re-verify file permission -->
+    <div id="unlock-state-container" class="hidden surface-card rounded-3xl p-10 sm:p-14 text-center max-w-xl mx-auto my-8 border-amber-200">
+      <div class="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-5 shadow-sm">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-navy-900 text-[11px] font-mono font-semibold mb-3">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        <span id="unlock-lock-filename">CompanyDatabase.VPRS</span>
+      </div>
+      <h1 class="text-xl font-extrabold text-navy-900 mb-2">Confirm File Access to Load Companies</h1>
+      <p class="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mb-7">
+        Click below to confirm access to your selected <span class="font-mono font-semibold text-navy-900">.VPRS</span> file and load all companies saved inside it.
+      </p>
+      <button id="btn-unlock-existing-vprs" type="button" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-sm font-bold shadow-lg shadow-navy-900/20 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+        </svg>
+        <span>Unlock &amp; Load Companies</span>
+      </button>
+    </div>
+
+    <!-- EMPTY STATE: When there are no companies -->
+    <div id="empty-state-container" class="hidden surface-card rounded-3xl p-10 sm:p-14 text-center max-w-xl mx-auto my-8">
+      <div class="w-16 h-16 rounded-2xl bg-navy-900 text-white flex items-center justify-center mx-auto mb-5 shadow-lg shadow-navy-900/20">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      </div>
+      <div id="empty-lock-badge" class="hidden inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-navy-900 text-[11px] font-mono font-semibold mb-3">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="empty-lock-filename"></span>
+      </div>
+      <h1 class="text-xl font-extrabold text-navy-900 mb-2">No companies found</h1>
+      <p id="empty-state-subtext" class="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mb-7">
+        Create a company profile inside your selected <span class="font-mono font-semibold text-navy-900">.VPRS</span> database container to begin billing, inventory, and GST accounting.
+      </p>
+      <button id="btn-empty-create-company" type="button" onclick="openCreateCompanyModal()" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-sm font-bold shadow-lg shadow-navy-900/20 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>+ Create Company</span>
+      </button>
+    </div>
+
+    <!-- POPULATED STATE: When companies exist -->
+    <div id="companies-list-container" class="hidden">
+      <div class="surface-card rounded-2xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl font-extrabold tracking-tight text-navy-900">
+              Company Database
+            </h1>
+            <span id="company-count-badge" class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-navy-900 text-white">
+              1 / 10 Companies
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">
+            Each company stores completely isolated accounting, inventory, invoices, and media directly inside <span class="font-mono font-semibold text-slate-700">.VPRS</span>.
+          </p>
+        </div>
+
+        <button id="btn-top-create-company" type="button" onclick="openCreateCompanyModal()" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-md shadow-navy-900/15 transition-all shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>+ Create New Company</span>
+        </button>
+      </div>
+
+      <!-- Company Cards List -->
+      <div id="company-cards-grid" class="space-y-3.5"></div>
+    </div>
+
+  </main>
+
+  <!-- Deep Navy Footer -->
+  <footer class="w-full navy-header text-blue-200/70 border-t border-navy-700/60 px-6 py-3.5 text-xs flex flex-col sm:flex-row items-center justify-between gap-2">
+    <span class="font-medium text-white/90">AR Offline Billing Software &bull; Multi-Company Partition Engine</span>
+    <span class="font-mono text-[11px] text-blue-300/80">100% Portable .VPRS Storage</span>
+  </footer>
+
+  <!-- Contextual Three-Dot Dropdown Menu -->
+  <div id="context-menu" class="hidden fixed z-50 w-52 rounded-xl bg-white border border-slate-200 shadow-2xl py-1.5 text-xs text-slate-700">
+    <button type="button" id="ctx-open-company" class="w-full px-3.5 py-2 text-left hover:bg-slate-100 hover:text-navy-900 flex items-center gap-2.5 font-semibold transition-colors">
+      <svg class="w-4 h-4 text-navy-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+      </svg>
+      <span>Open Company</span>
+    </button>
+    <button type="button" id="ctx-company-info" class="w-full px-3.5 py-2 text-left hover:bg-slate-100 flex items-center gap-2.5 font-medium transition-colors">
+      <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>Company Information</span>
+    </button>
+    <div class="my-1 border-t border-slate-100"></div>
+    <button type="button" id="ctx-delete-company" class="w-full px-3.5 py-2 text-left hover:bg-red-50 text-red-600 flex items-center gap-2.5 font-semibold transition-colors">
+      <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+      <span>Delete Company</span>
+    </button>
+  </div>
+
+  <!-- MODAL 1: Create Company Details Form -->
+  <div id="create-company-modal" class="hidden fixed inset-0 z-50 bg-navy-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto">
+      <!-- Navy Modal Header -->
+      <div class="navy-header px-6 py-4 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white text-navy-900 flex items-center justify-center shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-extrabold text-white">Create Company Profile</h2>
+            <p class="text-[11px] text-blue-200 mt-0.5">
+              Saving directly into <span id="modal-target-filename" class="font-mono font-bold text-white"></span>
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCreateCompanyModal()" class="text-blue-200 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form id="create-company-form" class="p-6 space-y-5 max-h-[82vh] overflow-y-auto bg-white">
+
+        <!-- Logo Upload & Archive Media Vault -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="relative shrink-0">
+            <div id="logo-preview-box" class="w-20 h-20 rounded-2xl bg-white border-2 border-dashed border-navy-800/30 flex flex-col items-center justify-center text-navy-900 overflow-hidden shadow-xs">
+              <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-[10px] font-bold">Logo</span>
+            </div>
+          </div>
+          <div class="flex-1 space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="block text-xs font-extrabold text-navy-900">Company Logo</label>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-navy-900 text-white">Embedded in .VPRS</span>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+              Your company logo and all future product, signature, and document images are saved inside this company's isolated partition in the <span class="font-mono font-bold text-navy-900">.VPRS</span> file.
+            </p>
+            <div class="flex items-center gap-2 pt-1">
+              <label class="cursor-pointer px-3.5 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold transition-colors shadow-xs">
+                <span>Upload Logo Image</span>
+                <input type="file" id="input-logo" accept="image/png, image/jpeg, image/svg+xml, image/webp" class="hidden" />
+              </label>
+              <button type="button" id="btn-clear-logo" class="hidden px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Company Core Fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-800 mb-1">Legal Company Name <span class="text-red-500">*</span></label>
+            <input type="text" id="input-company-name" required placeholder="e.g. Apex Enterprises Pvt. Ltd." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800 focus:border-navy-800" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">GSTIN (Optional)</label>
+            <input type="text" id="input-gstin" maxlength="15" placeholder="e.g. 19AABCA1234D1Z5" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono uppercase text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">Financial Year <span class="text-red-500">*</span></label>
+            <input type="text" id="input-fy" required placeholder="e.g. 2026-2027" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+          </div>
+
+          <!-- Manual State, District, City Inputs -->
+          <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">State <span class="text-red-500">*</span></label>
+              <input type="text" id="input-state" required placeholder="e.g. West Bengal" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">District <span class="text-red-500">*</span></label>
+              <input type="text" id="input-district" required placeholder="e.g. Kolkata" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">City / Town <span class="text-red-500">*</span></label>
+              <input type="text" id="input-city" required placeholder="e.g. Salt Lake" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">Contact Phone <span class="text-red-500">*</span></label>
+            <input type="tel" id="input-phone" required placeholder="+91 98765 43210" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">Business Email <span class="text-red-500">*</span></label>
+            <input type="email" id="input-email" required placeholder="accounts@company.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-800 mb-1">Street / Registered Office Address <span class="text-red-500">*</span></label>
+            <textarea id="input-address" rows="2" required placeholder="Building No., Street Name, Landmark, PIN Code" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800"></textarea>
+          </div>
+        </div>
+
+        <!-- Accounting & Security Configuration -->
+        <div class="pt-3 border-t border-slate-200">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-navy-900 mb-3">Accounting &amp; Administrator Credentials</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">Base Currency <span class="text-red-500">*</span></label>
+              <select id="input-currency" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-navy-800">
+                <option value="INR">INR (₹) - Indian Rupee</option>
+                <option value="USD">USD ($) - US Dollar</option>
+                <option value="EUR">EUR (€) - Euro</option>
+                <option value="GBP">GBP (£) - British Pound</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">Taxation Regime <span class="text-red-500">*</span></label>
+              <select id="input-tax-scheme" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-navy-800">
+                <option value="GST_REGULAR">GST Regular</option>
+                <option value="GST_COMPOSITION">GST Composition</option>
+                <option value="UNREGISTERED">Unregistered / Non-GST</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">Admin Username <span class="text-red-500">*</span></label>
+              <input type="text" id="input-admin-user" required value="admin" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">Admin Password / PIN <span class="text-red-500">*</span></label>
+              <input type="password" id="input-admin-pass" required placeholder="Set secure password for login.html" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer Buttons -->
+        <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+          <button type="button" onclick="closeCreateCompanyModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-company" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-md shadow-navy-900/20 transition-all">
+            Save Company Into .VPRS
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: No Database File Selected Prompt -->
+  <div id="no-db-modal" class="hidden fixed inset-0 z-50 bg-navy-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center">
+      <div class="w-12 h-12 rounded-xl bg-navy-900 text-white flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="text-base font-extrabold text-navy-900 mb-1.5">No .VPRS File Selected</h3>
+      <p class="text-xs text-slate-600 leading-relaxed mb-6">
+        Creating a file and creating a company are separate operations. Return to the launcher to create or select a <span class="font-mono font-bold text-navy-900">.VPRS</span> file first.
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <button type="button" onclick="closeNoDbModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">
+          Close
+        </button>
+        <a href="index.html" class="px-4 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-sm">
+          Go to File Launcher
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Company Information Modal -->
+  <div id="info-modal" class="hidden fixed inset-0 z-50 bg-navy-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+      <div class="navy-header px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="text-sm font-extrabold">Company &amp; Archive Information</h3>
+        <button type="button" onclick="closeInfoModal()" class="text-blue-200 hover:text-white p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="info-modal-body" class="p-6 space-y-4 text-xs bg-white"></div>
+      <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <button type="button" onclick="closeInfoModal()" class="px-4 py-2 rounded-xl bg-navy-900 text-white text-xs font-bold hover:bg-navy-800">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Permanent Delete Confirmation Dialog -->
+  <div id="delete-modal" class="hidden fixed inset-0 z-50 bg-navy-950/65 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-red-200 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="p-6">
+        <div class="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 text-red-600 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+
+        <h3 class="text-base font-extrabold text-slate-900">Permanently Delete Company?</h3>
+        <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+          You are about to permanently delete <strong id="del-company-name" class="text-slate-900"></strong> from <code id="del-file-name" class="font-mono text-red-700 bg-red-50 px-1.5 py-0.5 rounded"></code>.
+        </p>
+
+        <div class="mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-[11px] text-red-900 space-y-1">
+          <p class="font-bold">This action cannot be undone. All of the following will be permanently destroyed:</p>
+          <ul class="list-disc list-inside text-red-800 space-y-0.5 pt-0.5">
+            <li>All sales invoices, purchase bills, and GST returns</li>
+            <li>All customers, suppliers, and inventory stock records</li>
+            <li>All accounting ledgers, banking, and payroll records</li>
+            <li>Company logo, attached documents, and this company's partition</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
+        <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors">
+          Cancel
+        </button>
+        <button type="button" id="btn-confirm-delete" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-colors">
+          Permanently Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Active File & Multi-Company .VPRS Engine (Zero Browser Data Storage, Zero Latency) -->
+  <script>
+    const FILE_POINTER_DB = 'AR_VPRS_ACTIVE_HANDOFF_DB';
+    const FILE_POINTER_VERSION = 1;
+    const FILE_POINTER_STORE = 'active_file_handle';
+    const VPRS_MAGIC_HEADER = 'VPRS_AR_BILLING_CONTAINER_V1';
+    const MAX_COMPANIES_PER_FILE = 10;
+
+    let activeRecord = null; // { handle, fileName, accessible, archive, sizeBytes, lastModified }
+    let activeMenuTarget = null; // { record, company }
+    let pendingDeleteTarget = null; // { record, company }
+    let uploadedLogoDataUrl = null;
+    let cachedPointerDB = null;
+
+    // Enforce zero browser storage for business/company data
+    function enforceZeroBrowserDataStorage() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_) {}
+    }
+
+    function openFilePointerDB() {
+      if (cachedPointerDB) return Promise.resolve(cachedPointerDB);
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(FILE_POINTER_DB, FILE_POINTER_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(FILE_POINTER_STORE)) {
+            db.createObjectStore(FILE_POINTER_STORE, { keyPath: 'key' });
+          }
+        };
+        request.onsuccess = () => {
+          cachedPointerDB = request.result;
+          resolve(cachedPointerDB);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    // Store strictly the OS FileSystemFileHandle pointer so pages read/write directly to the .VPRS file on disk
+    async function saveDiskFilePointerOnly(fileHandle) {
+      enforceZeroBrowserDataStorage();
+      const db = await openFilePointerDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(FILE_POINTER_STORE, 'readwrite');
+        tx.objectStore(FILE_POINTER_STORE).put({
+          key: 'current_vprs',
+          handle: fileHandle
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getActiveDiskFilePointer() {
+      const db = await openFilePointerDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(FILE_POINTER_STORE, 'readonly');
+        const req = tx.objectStore(FILE_POINTER_STORE).get('current_vprs');
+        tx.oncomplete = () => resolve(req.result || null);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function normalizeVPRSCompanies(parsed) {
+      if (!parsed || parsed.format !== VPRS_MAGIC_HEADER) {
+        throw new Error('Invalid or corrupted .VPRS container header.');
+      }
+
+      if (!Array.isArray(parsed.companies)) {
+        parsed.companies = [];
+      }
+
+      // Support single-company or shared/migrated .VPRS archives seamlessly
+      if (parsed.companies.length === 0 && parsed.companyProfile && parsed.companyProfile.companyName) {
+        const legacyCompanyId = parsed.companyProfile.companyId || ('comp_' + Date.now().toString(36));
+        parsed.companies.push({
+          companyId: legacyCompanyId,
+          companyProfile: { ...parsed.companyProfile, companyId: legacyCompanyId },
+          assets: parsed.assets || { logo: null, images: {}, documents: {} },
+          tables: parsed.tables || {
+            users: [],
+            customers: [],
+            suppliers: [],
+            inventory: [],
+            sales_invoices: [],
+            purchase_bills: [],
+            expenses: [],
+            income: [],
+            banking_accounts: [],
+            banking_transactions: [],
+            ledger_accounts: [],
+            journal_entries: [],
+            gst_returns: [],
+            payroll_employees: [],
+            payroll_runs: [],
+            settings: {}
+          }
+        });
+      }
+
+      return parsed;
+    }
+
+    async function readVPRSFileFromHandle(fileHandle, requireWrite = false) {
+      if (requireWrite) {
+        let writePerm = await fileHandle.queryPermission({ mode: 'readwrite' });
+        if (writePerm !== 'granted') {
+          writePerm = await fileHandle.requestPermission({ mode: 'readwrite' });
+        }
+        if (writePerm !== 'granted') {
+          const err = new Error('Write permission required for ' + fileHandle.name);
+          err.code = 'PERMISSION_NEEDED';
+          throw err;
+        }
+      }
+
+      let file;
+      try {
+        file = await fileHandle.getFile();
+      } catch (_) {
+        const permErr = new Error('Permission required to read ' + fileHandle.name);
+        permErr.code = 'PERMISSION_NEEDED';
+        throw permErr;
+      }
+
+      const text = await file.text();
+      const parsed = normalizeVPRSCompanies(JSON.parse(text));
+      return { data: parsed, fileName: fileHandle.name, sizeBytes: file.size, lastModified: file.lastModified };
+    }
+
+    async function refreshCompanyWorkspace() {
+      enforceZeroBrowserDataStorage();
+
+      const loadingEl = document.getElementById('loading-state');
+      const unlockEl = document.getElementById('unlock-state-container');
+      const emptyEl = document.getElementById('empty-state-container');
+      const listEl = document.getElementById('companies-list-container');
+      const cardsGrid = document.getElementById('company-cards-grid');
+      const pendingBanner = document.getElementById('pending-container-banner');
+      const activePill = document.getElementById('active-target-pill');
+      const emptyLockBadge = document.getElementById('empty-lock-badge');
+
+      loadingEl.classList.remove('hidden');
+      unlockEl.classList.add('hidden');
+      emptyEl.classList.add('hidden');
+      listEl.classList.add('hidden');
+      pendingBanner.classList.add('hidden');
+      activePill.classList.add('hidden');
+      emptyLockBadge.classList.add('hidden');
+
+      try {
+        const pointerRecord = await getActiveDiskFilePointer();
+        if (!pointerRecord || !pointerRecord.handle) {
+          activeRecord = null;
+          loadingEl.classList.add('hidden');
+          emptyEl.classList.remove('hidden');
+          return;
+        }
+
+        const diskFileName = pointerRecord.handle.name;
+        let archiveInfo = null;
+        let accessible = false;
+        let permissionBlocked = false;
+
+        try {
+          archiveInfo = await readVPRSFileFromHandle(pointerRecord.handle, false);
+          accessible = true;
+        } catch (err) {
+          accessible = false;
+          if (err && err.code === 'PERMISSION_NEEDED') {
+            permissionBlocked = true;
+          }
+        }
+
+        activeRecord = {
+          handle: pointerRecord.handle,
+          fileName: diskFileName,
+          accessible,
+          archive: archiveInfo ? archiveInfo.data : null,
+          sizeBytes: archiveInfo ? archiveInfo.sizeBytes : 0,
+          lastModified: archiveInfo ? archiveInfo.lastModified : null
+        };
+
+        activePill.classList.remove('hidden');
+        document.getElementById('active-target-label').textContent = activeRecord.fileName;
+
+        if (permissionBlocked) {
+          loadingEl.classList.add('hidden');
+          document.getElementById('unlock-lock-filename').textContent = activeRecord.fileName;
+          unlockEl.classList.remove('hidden');
+          return;
+        }
+
+        const companiesList = (activeRecord.accessible && activeRecord.archive && Array.isArray(activeRecord.archive.companies))
+          ? activeRecord.archive.companies
+          : [];
+
+        loadingEl.classList.add('hidden');
+
+        if (companiesList.length === 0) {
+          pendingBanner.classList.remove('hidden');
+          document.getElementById('pending-file-name').textContent = activeRecord.fileName;
+          emptyLockBadge.classList.remove('hidden');
+          document.getElementById('empty-lock-filename').textContent = `Active File: ${activeRecord.fileName}`;
+          emptyEl.classList.remove('hidden');
+          document.getElementById('empty-state-subtext').innerHTML =
+            `Container <span class="font-mono font-bold text-navy-900">${escapeHtml(activeRecord.fileName)}</span> is ready. Create up to ${MAX_COMPANIES_PER_FILE} separate companies inside this file.`;
+          return;
+        }
+
+        // Render all companies directly from the .VPRS file on disk
+        listEl.classList.remove('hidden');
+        cardsGrid.innerHTML = '';
+
+        const countBadge = document.getElementById('company-count-badge');
+        countBadge.textContent = `${companiesList.length} / ${MAX_COMPANIES_PER_FILE} Companies`;
+
+        const topCreateBtn = document.getElementById('btn-top-create-company');
+        if (companiesList.length >= MAX_COMPANIES_PER_FILE) {
+          topCreateBtn.disabled = true;
+          topCreateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          topCreateBtn.title = `Maximum limit of ${MAX_COMPANIES_PER_FILE} companies reached in this .VPRS file`;
+        } else {
+          topCreateBtn.disabled = false;
+          topCreateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          topCreateBtn.title = '';
+        }
+
+        companiesList.forEach((companyEntry, index) => {
+          const profile = companyEntry.companyProfile || {};
+          const logoSrc = (companyEntry.assets && (companyEntry.assets.logo || (companyEntry.assets.images && companyEntry.assets.images.company_logo && companyEntry.assets.images.company_logo.dataUrl))) || null;
+          const initials = (profile.companyName || 'CO').substring(0, 2).toUpperCase();
+          const locationLine = [profile.city, profile.district, profile.state].filter(Boolean).join(', ');
+          const storedImageCount = companyEntry.assets && companyEntry.assets.images ? Object.keys(companyEntry.assets.images).length : (logoSrc ? 1 : 0);
+
+          const card = document.createElement('div');
+          card.className = 'company-row surface-card rounded-2xl p-5 flex items-center justify-between gap-4 cursor-pointer';
+
+          card.innerHTML = `
+            <div class="flex items-center gap-4 min-w-0 flex-1" data-action="open">
+              <div class="w-16 h-16 rounded-2xl bg-navy-900 text-white border border-navy-800 flex items-center justify-center shrink-0 overflow-hidden shadow-md">
+                ${
+                  logoSrc
+                    ? `<img src="${logoSrc}" alt="${escapeHtml(profile.companyName)}" class="w-full h-full object-contain p-1.5 bg-white" />`
+                    : `<span class="text-lg font-extrabold tracking-wide text-white">${escapeHtml(initials)}</span>`
+                }
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">#${index + 1}</span>
+                  <h2 class="text-base sm:text-lg font-extrabold text-navy-900 truncate">${escapeHtml(profile.companyName)}</h2>
+                  <span class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-navy-900 text-white">
+                    FY ${escapeHtml(profile.financialYear || '2026-2027')}
+                  </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-slate-600">
+                  ${
+                    profile.gstin
+                      ? `<span class="font-mono font-bold text-navy-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">GSTIN: ${escapeHtml(profile.gstin)}</span>`
+                      : `<span class="text-slate-400 italic">Unregistered (No GSTIN)</span>`
+                  }
+                  ${
+                    locationLine
+                      ? `<span class="text-slate-700 font-semibold">${escapeHtml(locationLine)}</span>`
+                      : ''
+                  }
+                  <span class="hidden md:inline text-slate-300">•</span>
+                  <span class="font-mono text-[11px] text-brand-700 font-semibold truncate">${escapeHtml(activeRecord.fileName)}</span>
+                  <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono text-slate-400">
+                    (${storedImageCount} isolated asset${storedImageCount === 1 ? '' : 's'})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 shrink-0">
+              <button type="button" data-action="open" class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition-all shadow-sm">
+                <span>Open Company</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              <button type="button" data-action="menu" aria-label="Company Options" class="p-2.5 rounded-xl text-slate-500 hover:text-navy-900 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+            </div>
+          `;
+
+          card.querySelectorAll('[data-action="open"]').forEach((el) => {
+            el.addEventListener('click', () => openCompanySession(activeRecord, companyEntry));
+          });
+
+          card.querySelector('[data-action="menu"]').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openContextMenu(e.currentTarget, activeRecord, companyEntry);
+          });
+
+          cardsGrid.appendChild(card);
+        });
+      } catch (err) {
+        loadingEl.classList.add('hidden');
+        showBanner('error', 'Failed to Load .VPRS File', err.message);
+      }
+    }
+
+    async function openCompanySession(item, companyEntry) {
+      try {
+        // Ensure write permission on user click, commit activeCompanyId directly into the .VPRS file, and jump immediately to login.html
+        const archive = item.archive || (await readVPRSFileFromHandle(item.handle, true)).data;
+        let writePerm = await item.handle.queryPermission({ mode: 'readwrite' });
+        if (writePerm !== 'granted') {
+          writePerm = await item.handle.requestPermission({ mode: 'readwrite' });
+        }
+        if (writePerm !== 'granted') {
+          throw new Error('Write permission is required to open the company database.');
+        }
+
+        const targetCompany = (archive.companies || []).find(c => c.companyId === companyEntry.companyId) || companyEntry;
+        archive.activeCompanyId = targetCompany.companyId;
+        archive.isInitialized = true;
+        archive.companyProfile = targetCompany.companyProfile;
+        archive.assets = targetCompany.assets;
+        archive.tables = targetCompany.tables;
+
+        const writable = await item.handle.createWritable();
+        await writable.write(JSON.stringify(archive));
+        await writable.close();
+
+        await saveDiskFilePointerOnly(item.handle);
+        window.location.replace('login.html');
+      } catch (err) {
+        showBanner('error', 'Unable to Open Company', err.message);
+      }
+    }
+
+    async function openCreateCompanyModal() {
+      if (!activeRecord || !activeRecord.handle) {
+        document.getElementById('no-db-modal').classList.remove('hidden');
+        return;
+      }
+
+      if (!activeRecord.accessible) {
+        try {
+          const info = await readVPRSFileFromHandle(activeRecord.handle, true);
+          activeRecord.accessible = true;
+          activeRecord.archive = info.data;
+        } catch (err) {
+          showBanner('error', 'Unable to Unlock .VPRS File', err.message);
+          return;
+        }
+      }
+
+      const existingCount = (activeRecord.archive && Array.isArray(activeRecord.archive.companies))
+        ? activeRecord.archive.companies.length
+        : 0;
+
+      if (existingCount >= MAX_COMPANIES_PER_FILE) {
+        showBanner(
+          'warning',
+          'Maximum Company Limit Reached',
+          `This .VPRS file already contains ${MAX_COMPANIES_PER_FILE} companies (the maximum allowed per database file).`
+        );
+        return;
+      }
+
+      document.getElementById('modal-target-filename').textContent = `${activeRecord.fileName} (Company ${existingCount + 1} of ${MAX_COMPANIES_PER_FILE})`;
+      document.getElementById('create-company-form').reset();
+      uploadedLogoDataUrl = null;
+      resetLogoPreview();
+      document.getElementById('create-company-modal').classList.remove('hidden');
+    }
+
+    function closeCreateCompanyModal() {
+      document.getElementById('create-company-modal').classList.add('hidden');
+    }
+
+    function closeNoDbModal() {
+      document.getElementById('no-db-modal').classList.add('hidden');
+    }
+
+    const inputLogo = document.getElementById('input-logo');
+    const btnClearLogo = document.getElementById('btn-clear-logo');
+    const logoPreviewBox = document.getElementById('logo-preview-box');
+
+    function resetLogoPreview() {
+      logoPreviewBox.innerHTML = `
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="text-[10px] font-bold">Logo</span>
+      `;
+      btnClearLogo.classList.add('hidden');
+    }
+
+    inputLogo.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        showBanner('warning', 'Logo Image Too Large', 'Please choose a logo image under 2 MB.');
+        inputLogo.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedLogoDataUrl = reader.result;
+        logoPreviewBox.innerHTML = `<img src="${uploadedLogoDataUrl}" alt="Logo Preview" class="w-full h-full object-contain p-1.5 bg-white" />`;
+        btnClearLogo.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    btnClearLogo.addEventListener('click', () => {
+      uploadedLogoDataUrl = null;
+      inputLogo.value = '';
+      resetLogoPreview();
+    });
+
+    document.getElementById('create-company-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeRecord || !activeRecord.handle) {
+        closeCreateCompanyModal();
+        document.getElementById('no-db-modal').classList.remove('hidden');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit-company');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving Into .VPRS...';
+
+      try {
+        const { data: archive } = await readVPRSFileFromHandle(activeRecord.handle, true);
+        archive.companies = Array.isArray(archive.companies) ? archive.companies : [];
+
+        if (archive.companies.length >= MAX_COMPANIES_PER_FILE) {
+          throw new Error(`Maximum limit of ${MAX_COMPANIES_PER_FILE} companies reached in this .VPRS container.`);
+        }
+
+        const companyName = document.getElementById('input-company-name').value.trim();
+        const gstin = document.getElementById('input-gstin').value.trim().toUpperCase();
+        const state = document.getElementById('input-state').value.trim();
+        const district = document.getElementById('input-district').value.trim();
+        const city = document.getElementById('input-city').value.trim();
+        const phone = document.getElementById('input-phone').value.trim();
+        const email = document.getElementById('input-email').value.trim();
+        const address = document.getElementById('input-address').value.trim();
+        const financialYear = document.getElementById('input-fy').value.trim();
+        const currency = document.getElementById('input-currency').value;
+        const taxScheme = document.getElementById('input-tax-scheme').value;
+        const adminUser = document.getElementById('input-admin-user').value.trim();
+        const adminPass = document.getElementById('input-admin-pass').value;
+
+        if (!companyName || !state || !district || !city || !financialYear || !adminUser || !adminPass) {
+          throw new Error('Company Name, State, District, City, Financial Year, Admin Username, and Password are required.');
+        }
+
+        const now = new Date().toISOString();
+        const companyId = 'comp_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
+
+        // Build completely isolated data partition for this company inside the .VPRS file
+        const newCompanyEntry = {
+          companyId,
+          companyProfile: {
+            companyId,
+            companyName,
+            gstin: gstin || null,
+            state,
+            district,
+            city,
+            phone,
+            email,
+            address,
+            financialYear,
+            currency,
+            taxScheme,
+            createdAt: now
+          },
+          assets: {
+            logo: uploadedLogoDataUrl || null,
+            images: uploadedLogoDataUrl
+              ? {
+                  company_logo: {
+                    id: 'company_logo',
+                    category: 'COMPANY_BRANDING',
+                    dataUrl: uploadedLogoDataUrl,
+                    savedAt: now
+                  }
+                }
+              : {},
+            documents: {}
+          },
+          tables: {
+            users: [
+              {
+                id: 'usr_admin_01',
+                username: adminUser,
+                phone: phone,
+                email: email,
+                passwordHash: btoa(adminPass),
+                fullName: 'Company Administrator',
+                role: 'OWNER',
+                active: true,
+                createdAt: now
+              }
+            ],
+            customers: [],
+            suppliers: [],
+            inventory: [],
+            sales_invoices: [],
+            purchase_bills: [],
+            expenses: [],
+            income: [],
+            banking_accounts: [],
+            banking_transactions: [],
+            ledger_accounts: [
+              { id: 'acc_cash', code: '1001', name: 'Cash in Hand', group: 'Current Assets', openingBalance: 0 },
+              { id: 'acc_bank', code: '1002', name: 'Primary Bank Account', group: 'Bank Accounts', openingBalance: 0 },
+              { id: 'acc_sales', code: '4001', name: 'Sales Revenue', group: 'Direct Income', openingBalance: 0 },
+              { id: 'acc_purchase', code: '5001', name: 'Purchases Account', group: 'Direct Expenses', openingBalance: 0 },
+              { id: 'acc_cgst', code: '2101', name: 'CGST Payable / Input', group: 'Duties & Taxes', openingBalance: 0 },
+              { id: 'acc_sgst', code: '2102', name: 'SGST Payable / Input', group: 'Duties & Taxes', openingBalance: 0 },
+              { id: 'acc_igst', code: '2103', name: 'IGST Payable / Input', group: 'Duties & Taxes', openingBalance: 0 }
+            ],
+            journal_entries: [],
+            gst_returns: [],
+            payroll_employees: [],
+            payroll_runs: [],
+            settings: {
+              invoicePrefix: 'INV-',
+              nextInvoiceNumber: 1,
+              purchasePrefix: 'PUR-',
+              nextPurchaseNumber: 1,
+              financialYear,
+              currency,
+              taxScheme
+            }
+          }
+        };
+
+        // Append without overwriting any previously created companies in this .VPRS file
+        archive.companies.push(newCompanyEntry);
+        archive.activeCompanyId = companyId;
+        archive.isInitialized = true;
+        archive.updatedAt = now;
+        archive.companyProfile = newCompanyEntry.companyProfile;
+        archive.assets = newCompanyEntry.assets;
+        archive.tables = newCompanyEntry.tables;
+
+        const writable = await activeRecord.handle.createWritable();
+        await writable.write(JSON.stringify(archive));
+        await writable.close();
+
+        await saveDiskFilePointerOnly(activeRecord.handle);
+
+        closeCreateCompanyModal();
+        showBanner(
+          'success',
+          'Company Added Successfully',
+          `"${companyName}" (${archive.companies.length} of ${MAX_COMPANIES_PER_FILE}) has been saved directly inside ${activeRecord.fileName}.`
+        );
+        await refreshCompanyWorkspace();
+      } catch (err) {
+        showBanner('error', 'Failed to Create Company', err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Company Into .VPRS';
+      }
+    });
+
+    const contextMenu = document.getElementById('context-menu');
+
+    function openContextMenu(anchorBtn, record, companyEntry) {
+      activeMenuTarget = { record, company: companyEntry };
+      const rect = anchorBtn.getBoundingClientRect();
+      contextMenu.classList.remove('hidden');
+
+      const menuWidth = 208;
+      const leftPos = Math.min(window.innerWidth - menuWidth - 16, Math.max(16, rect.right - menuWidth));
+      const topPos = rect.bottom + 6;
+
+      contextMenu.style.left = `${leftPos}px`;
+      contextMenu.style.top = `${topPos}px`;
+    }
+
+    function closeContextMenu() {
+      contextMenu.classList.add('hidden');
+      activeMenuTarget = null;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!contextMenu.contains(e.target)) {
+        closeContextMenu();
+      }
+    });
+
+    document.getElementById('ctx-open-company').addEventListener('click', () => {
+      if (activeMenuTarget) {
+        const target = activeMenuTarget;
+        closeContextMenu();
+        openCompanySession(target.record, target.company);
+      }
+    });
+
+    document.getElementById('ctx-company-info').addEventListener('click', () => {
+      if (activeMenuTarget) {
+        const target = activeMenuTarget;
+        closeContextMenu();
+        openInfoModal(target.record, target.company);
+      }
+    });
+
+    document.getElementById('ctx-delete-company').addEventListener('click', () => {
+      if (activeMenuTarget) {
+        const target = activeMenuTarget;
+        closeContextMenu();
+        openDeleteModal(target.record, target.company);
+      }
+    });
+
+    function openInfoModal(item, companyEntry) {
+      const p = companyEntry.companyProfile;
+      const sizeKB = (item.sizeBytes / 1024).toFixed(2);
+      const imageVaultCount = companyEntry.assets && companyEntry.assets.images ? Object.keys(companyEntry.assets.images).length : 0;
+      const docVaultCount = companyEntry.assets && companyEntry.assets.documents ? Object.keys(companyEntry.assets.documents).length : 0;
+      const body = document.getElementById('info-modal-body');
+
+      body.innerHTML = `
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400">Company Name</span>
+            <p class="font-extrabold text-navy-900 mt-0.5">${escapeHtml(p.companyName)}</p>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400">GSTIN</span>
+            <p class="font-mono font-bold text-slate-800 mt-0.5">${escapeHtml(p.gstin || 'Not Registered')}</p>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400">Financial Year</span>
+            <p class="font-semibold text-slate-800 mt-0.5">${escapeHtml(p.financialYear)}</p>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400">Location (City, District, State)</span>
+            <p class="font-semibold text-slate-800 mt-0.5">${escapeHtml([p.city, p.district, p.state].filter(Boolean).join(', '))}</p>
+          </div>
+          <div class="col-span-2">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Registered Address</span>
+            <p class="text-slate-700 mt-0.5">${escapeHtml(p.address)}</p>
+          </div>
+        </div>
+        <div class="space-y-1.5 pt-1">
+          <div class="flex justify-between py-1 border-b border-slate-100">
+            <span class="text-slate-500">Archive File Name</span>
+            <span class="font-mono font-bold text-navy-900">${escapeHtml(item.fileName)}</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-100">
+            <span class="text-slate-500">Company Partition ID</span>
+            <span class="font-mono text-slate-700">${escapeHtml(companyEntry.companyId)}</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-100">
+            <span class="text-slate-500">Isolated Media &amp; Document Vault</span>
+            <span class="font-mono font-bold text-brand-700">${imageVaultCount} image(s), ${docVaultCount} doc(s)</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-slate-500">Total .VPRS Archive Size</span>
+            <span class="font-mono text-slate-700">${sizeKB} KB</span>
+          </div>
+        </div>
+      `;
+      document.getElementById('info-modal').classList.remove('hidden');
+    }
+
+    function closeInfoModal() {
+      document.getElementById('info-modal').classList.add('hidden');
+    }
+
+    function openDeleteModal(item, companyEntry) {
+      pendingDeleteTarget = { record: item, company: companyEntry };
+      const totalCompanies = (item.archive && Array.isArray(item.archive.companies)) ? item.archive.companies.length : 1;
+      document.getElementById('del-company-name').textContent = companyEntry.companyProfile.companyName;
+      document.getElementById('del-file-name').textContent = totalCompanies > 1
+        ? `${item.fileName} (Partition ${companyEntry.companyId})`
+        : item.fileName;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      pendingDeleteTarget = null;
+      document.getElementById('delete-modal').classList.add('hidden');
+    }
+
+    document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+      if (!pendingDeleteTarget) return;
+
+      const { record: target, company: targetCompany } = pendingDeleteTarget;
+      const confirmBtn = document.getElementById('btn-confirm-delete');
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Deleting...';
+
+      try {
+        const { data: verifiedArchive } = await readVPRSFileFromHandle(target.handle, true);
+        if (verifiedArchive.containerId !== target.archive.containerId) {
+          throw new Error('Container identity mismatch. Deletion aborted for safety.');
+        }
+
+        verifiedArchive.companies = Array.isArray(verifiedArchive.companies) ? verifiedArchive.companies : [];
+        const remainingCompanies = verifiedArchive.companies.filter(c => c.companyId !== targetCompany.companyId);
+        const deletedName = targetCompany.companyProfile.companyName;
+        const deletedFile = target.fileName;
+
+        if (remainingCompanies.length > 0) {
+          const nextActive = remainingCompanies[0];
+          verifiedArchive.companies = remainingCompanies;
+          verifiedArchive.activeCompanyId = nextActive.companyId;
+          verifiedArchive.updatedAt = new Date().toISOString();
+          verifiedArchive.companyProfile = nextActive.companyProfile;
+          verifiedArchive.assets = nextActive.assets;
+          verifiedArchive.tables = nextActive.tables;
+
+          const writable = await target.handle.createWritable();
+          await writable.write(JSON.stringify(verifiedArchive));
+          await writable.close();
+
+          closeDeleteModal();
+          showBanner(
+            'success',
+            'Company Partition Deleted',
+            `"${deletedName}" has been permanently deleted. ${remainingCompanies.length} other compan${remainingCompanies.length === 1 ? 'y remains' : 'ies remain'} intact in ${deletedFile}.`
+          );
+          await refreshCompanyWorkspace();
+          return;
+        }
+
+        // Last company in the .VPRS file: permanently delete the entire .VPRS file from disk
+        if (typeof target.handle.remove === 'function') {
+          await target.handle.remove();
+        } else {
+          throw new Error(
+            'Your current runtime does not expose FileSystemFileHandle.remove(). Please delete the file manually or run in an updated Chromium/Electron desktop runtime.'
+          );
+        }
+
+        const db = await openFilePointerDB();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(FILE_POINTER_STORE, 'readwrite');
+          tx.objectStore(FILE_POINTER_STORE).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+
+        closeDeleteModal();
+
+        showBanner(
+          'success',
+          'Company & .VPRS File Permanently Deleted',
+          `"${deletedName}" and its archive "${deletedFile}" have been permanently deleted.`
+        );
+
+        await refreshCompanyWorkspace();
+      } catch (err) {
+        closeDeleteModal();
+        showBanner('error', 'Unable to Delete Company', err.message);
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Permanently Delete';
+      }
+    });
+
+    function showBanner(type, title, message) {
+      const banner = document.getElementById('status-banner');
+      const icon = document.getElementById('status-icon');
+      banner.classList.remove(
+        'hidden',
+        'border-red-200', 'text-red-900',
+        'border-amber-200', 'text-amber-900',
+        'border-emerald-200', 'text-emerald-900'
+      );
+
+      if (type === 'error') {
+        banner.classList.add('border-red-200', 'text-red-900');
+        icon.innerHTML = `<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      } else if (type === 'warning') {
+        banner.classList.add('border-amber-200', 'text-amber-900');
+        icon.innerHTML = `<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+      } else {
+        banner.classList.add('border-emerald-200', 'text-emerald-900');
+        icon.innerHTML = `<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      }
+
+      document.getElementById('status-title').textContent = title;
+      document.getElementById('status-message').textContent = message;
+    }
+
+    function hideBanner() {
+      document.getElementById('status-banner').classList.add('hidden');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    document.getElementById('btn-unlock-existing-vprs').addEventListener('click', async () => {
+      if (!activeRecord || !activeRecord.handle) return;
+      try {
+        await readVPRSFileFromHandle(activeRecord.handle, true);
+        await refreshCompanyWorkspace();
+      } catch (err) {
+        showBanner('error', 'Unable to Unlock .VPRS File', err.message);
+      }
+    });
+
+    refreshCompanyWorkspace();
+  </script>
+</body>
+</html>

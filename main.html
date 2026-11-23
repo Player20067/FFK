@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Offline Billing Software — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#030712',
+              900: '#071126',
+              800: '#0d1d3d',
+              700: '#152b59',
+              600: '#1e3c78',
+            },
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Dark Navy Blue & Crisp White Enterprise Shell */
+    body {
+      background-color: #f3f6fa;
+      user-select: none;
+    }
+
+    .navy-surface {
+      background: linear-gradient(165deg, #040a18 0%, #071126 55%, #0d1d3d 100%);
+    }
+
+    .card-surface {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 26px -12px rgba(7, 17, 38, 0.08), 0 2px 8px -2px rgba(7, 17, 38, 0.03);
+    }
+
+    /* Sidebar Transitions */
+    #app-sidebar {
+      width: 268px;
+      transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #app-sidebar.is-collapsed {
+      width: 76px;
+    }
+
+    #app-sidebar.is-collapsed .sidebar-label,
+    #app-sidebar.is-collapsed .sidebar-chevron,
+    #app-sidebar.is-collapsed .sidebar-section-title,
+    #app-sidebar.is-collapsed .submenu-panel {
+      display: none !important;
+    }
+
+    #app-sidebar.is-collapsed .nav-item-btn {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.45);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7);
+    }
+  </style>
+</head>
+<body class="text-slate-900 h-screen overflow-hidden flex flex-col antialiased selection:bg-navy-900 selection:text-white">
+
+  <!-- Top Application Header -->
+  <header class="h-16 navy-surface text-white border-b border-navy-700/70 px-4 sm:px-6 flex items-center justify-between z-40 shadow-lg shrink-0">
+    <!-- Left: Collapse Sidebar Toggle + Company Logo & Name -->
+    <div class="flex items-center gap-3.5 min-w-0">
+      <button
+        type="button"
+        id="btn-toggle-sidebar"
+        title="Collapse / Expand Sidebar"
+        class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors shrink-0 focus:outline-none"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+      </button>
+
+      <div class="h-7 w-px bg-white/15 hidden sm:block"></div>
+
+      <!-- Company Logo & Name -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="header-company-logo" class="w-10 h-10 rounded-xl bg-white text-navy-900 flex items-center justify-center font-black text-sm shadow-md overflow-hidden shrink-0">
+          <span id="header-company-initials">AR</span>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 id="header-company-name" class="font-extrabold text-sm sm:text-base text-white truncate tracking-tight">
+              Loading Company...
+            </h1>
+            <span id="header-fy-tag" class="hidden md:inline-block text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/10 text-blue-200 border border-white/15 shrink-0">
+              FY 2026-2027
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-blue-200/80 truncate">
+            <span id="header-company-gstin" class="font-mono">Offline .VPRS</span>
+            <span class="hidden sm:inline">&bull;</span>
+            <span id="header-vprs-file" class="hidden sm:inline font-mono text-emerald-300 truncate"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Active User + Switch Company + Shut Company -->
+    <div class="flex items-center gap-2.5 shrink-0">
+      <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-blue-100">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="header-active-user" class="font-semibold">Admin</span>
+      </div>
+
+      <!-- Switch Company Button -->
+      <button
+        type="button"
+        id="btn-switch-company"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold transition-all"
+      >
+        <svg class="w-3.5 h-3.5 text-blue-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+        <span class="hidden sm:inline">Switch Company</span>
+      </button>
+
+      <!-- Shut Company Button -->
+      <button
+        type="button"
+        id="btn-shut-company"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-500/90 hover:bg-red-600 text-white text-xs font-bold shadow-sm transition-all"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Shut Company</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Container (Independent Scrollable Sidebar + Independent Scrollable Dashboard) -->
+  <div class="flex-1 flex min-h-0 overflow-hidden">
+
+    <!-- Collapsible Left Navigation Sidebar -->
+    <aside id="app-sidebar" class="navy-surface text-slate-200 border-r border-navy-700/60 h-full overflow-hidden flex flex-col justify-between shrink-0 select-none">
+      <nav class="p-3 space-y-1 overflow-y-auto overscroll-contain flex-1 min-h-0" aria-label="Primary Sidebar Navigation">
+
+        <div class="sidebar-section-title px-3 pt-2 pb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-blue-300/60">
+          Main Menu
+        </div>
+
+        <!-- 1. Dashboard (Active) -->
+        <a href="main.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white text-navy-900 font-extrabold text-xs shadow-md transition-all">
+          <svg class="w-4 h-4 shrink-0 text-navy-900" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span class="sidebar-label truncate">Dashboard</span>
+        </a>
+
+        <!-- 2. Parties (Expandable: New Party, Manage Party) -->
+        <div>
+          <button type="button" data-accordion="menu-parties" class="nav-item-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 shrink-0 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span class="sidebar-label truncate">Parties</span>
+            </span>
+            <svg class="sidebar-chevron w-3.5 h-3.5 text-blue-300/70 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="menu-parties" class="submenu-panel hidden mt-1 ml-4 pl-3 border-l border-white/15 space-y-1">
+            <a href="new-party.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              New Party
+            </a>
+            <a href="manage-party.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Manage Party
+            </a>
+          </div>
+        </div>
+
+        <!-- 3. Sales (Expandable: Add Sale, Sale Order, Credit Note, Receipt) -->
+        <div>
+          <button type="button" data-accordion="menu-sales" class="nav-item-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 shrink-0 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+              </svg>
+              <span class="sidebar-label truncate">Sales</span>
+            </span>
+            <svg class="sidebar-chevron w-3.5 h-3.5 text-blue-300/70 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="menu-sales" class="submenu-panel hidden mt-1 ml-4 pl-3 border-l border-white/15 space-y-1">
+            <a href="add-sale.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Add Sale
+            </a>
+            <a href="sale-order.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Sale Order
+            </a>
+            <a href="delivery-note.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Delivery Note
+            </a>
+            <a href="credit-note.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Credit Note
+            </a>
+            <a href="receipt.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Receipt
+            </a>
+          </div>
+        </div>
+
+        <!-- 4. Purchase (Expandable: Add Purchase, Debit Note, Purchase Order, Receipt Note, Payment) -->
+        <div>
+          <button type="button" data-accordion="menu-purchase" class="nav-item-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 shrink-0 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span class="sidebar-label truncate">Purchase</span>
+            </span>
+            <svg class="sidebar-chevron w-3.5 h-3.5 text-blue-300/70 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="menu-purchase" class="submenu-panel hidden mt-1 ml-4 pl-3 border-l border-white/15 space-y-1">
+            <a href="add-purchase.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Add Purchase
+            </a>
+            <a href="debit-note.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Debit Note
+            </a>
+            <a href="purchase-order.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Purchase Order
+            </a>
+            <a href="receipt-note.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Receipt Note
+            </a>
+            <a href="payment.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Payment
+            </a>
+          </div>
+        </div>
+
+        <!-- 5. Items (Expandable: Add Item, Manage Items) -->
+        <div>
+          <button type="button" data-accordion="menu-items" class="nav-item-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 shrink-0 text-indigo-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <span class="sidebar-label truncate">Items</span>
+            </span>
+            <svg class="sidebar-chevron w-3.5 h-3.5 text-blue-300/70 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="menu-items" class="submenu-panel hidden mt-1 ml-4 pl-3 border-l border-white/15 space-y-1">
+            <a href="add-item.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Add Item
+            </a>
+            <a href="manage-items.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Manage Items
+            </a>
+          </div>
+        </div>
+
+        <!-- 6. Banking (Expandable: Contra, Journal, Banks) -->
+        <div>
+          <button type="button" data-accordion="menu-banking" class="nav-item-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+            <span class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 shrink-0 text-sky-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+              </svg>
+              <span class="sidebar-label truncate">Banking</span>
+            </span>
+            <svg class="sidebar-chevron w-3.5 h-3.5 text-blue-300/70 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="menu-banking" class="submenu-panel hidden mt-1 ml-4 pl-3 border-l border-white/15 space-y-1">
+            <a href="contra.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Contra
+            </a>
+            <a href="journal.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Journal
+            </a>
+            <a href="banks.html" class="block px-3 py-2 rounded-lg text-[11px] font-medium text-blue-100/80 hover:text-white hover:bg-white/10 transition-colors">
+              Banks
+            </a>
+          </div>
+        </div>
+
+        <!-- 7. Cash -->
+        <a href="cash.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-teal-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="sidebar-label truncate">Cash</span>
+        </a>
+
+        <!-- 8. Reports -->
+        <a href="reports.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-purple-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span class="sidebar-label truncate">Reports</span>
+        </a>
+
+        <!-- 9. Daybook -->
+        <a href="daybook.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-orange-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span class="sidebar-label truncate">Daybook</span>
+        </a>
+
+        <div class="sidebar-section-title px-3 pt-4 pb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-blue-300/60">
+          System
+        </div>
+
+        <!-- 10. Profile -->
+        <a href="company-profile.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span class="sidebar-label truncate">Profile</span>
+        </a>
+
+        <!-- 11. Settings -->
+        <a href="settings.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span class="sidebar-label truncate">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer Status -->
+      <div class="p-3 border-t border-white/10 shrink-0">
+        <div class="px-3 py-2 rounded-xl bg-white/5 flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+          <span class="sidebar-label text-[11px] font-mono text-blue-200 truncate">Direct .VPRS Connected</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Stage -->
+    <main class="flex-1 h-full p-5 sm:p-8 overflow-y-auto overscroll-contain">
+
+      <!-- Permission / Missing Session Fallback Banner -->
+      <div id="session-warning-box" class="hidden mb-6 card-surface rounded-2xl p-6 border-amber-300 bg-amber-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 id="session-warning-title" class="text-sm font-extrabold text-amber-950">Database Access Needed</h3>
+          <p id="session-warning-desc" class="text-xs text-amber-900 mt-1">Grant permission to read your active .VPRS company partition.</p>
+        </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button type="button" id="btn-regrant-vprs" class="px-4 py-2 rounded-xl bg-navy-900 text-white text-xs font-bold hover:bg-navy-800">
+            Unlock .VPRS File
+          </button>
+          <a href="index.html" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50">
+            Launcher
+          </a>
+        </div>
+      </div>
+
+      <!-- Dashboard Top Control Bar: Title + Month Filter + Quick Actions -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-7">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-2xl font-extrabold text-navy-900 tracking-tight">Executive Dashboard</h2>
+            <span id="dashboard-period-badge" class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-navy-900 text-white">
+              All Months
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">
+            Real-time financial &amp; inventory telemetry read directly from <span id="dash-subtitle-company" class="font-bold text-navy-900">your company</span>.
+          </p>
+        </div>
+
+        <!-- Month Filter & Quick Action Buttons -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs">
+            <svg class="w-4 h-4 text-navy-900 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <label for="filter-month" class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Month:</label>
+            <select id="filter-month" class="text-xs font-extrabold text-navy-900 bg-transparent focus:outline-none cursor-pointer pr-1">
+              <option value="ALL">All Months (Full FY)</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+
+          <a href="add-sale.html" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-sm transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>New Sale</span>
+          </a>
+
+          <a href="add-purchase.html" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-navy-900 border border-slate-200 text-xs font-bold shadow-xs transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>New Purchase</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Primary 5 KPI Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-7">
+
+        <!-- KPI 1: Total Sales -->
+        <div class="card-surface rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Sales</span>
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+          </div>
+          <p id="kpi-total-sales" class="text-xl font-extrabold text-navy-900 font-mono">₹0.00</p>
+          <p id="kpi-sales-sub" class="text-[11px] text-slate-500 mt-1.5">0 invoices recorded</p>
+        </div>
+
+        <!-- KPI 2: Total Purchase -->
+        <div class="card-surface rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Purchase</span>
+            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </div>
+          </div>
+          <p id="kpi-total-purchase" class="text-xl font-extrabold text-navy-900 font-mono">₹0.00</p>
+          <p id="kpi-purchase-sub" class="text-[11px] text-slate-500 mt-1.5">0 purchase bills</p>
+        </div>
+
+        <!-- KPI 3: Total Receivable -->
+        <div class="card-surface rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Receivable</span>
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
+          </div>
+          <p id="kpi-total-receivable" class="text-xl font-extrabold text-blue-700 font-mono">₹0.00</p>
+          <p id="kpi-receivable-sub" class="text-[11px] text-slate-500 mt-1.5">Pending customer dues</p>
+        </div>
+
+        <!-- KPI 4: Total Payable -->
+        <div class="card-surface rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Payable</span>
+            <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+            </div>
+          </div>
+          <p id="kpi-total-payable" class="text-xl font-extrabold text-rose-600 font-mono">₹0.00</p>
+          <p id="kpi-payable-sub" class="text-[11px] text-slate-500 mt-1.5">Pending supplier dues</p>
+        </div>
+
+        <!-- KPI 5: Total Bills Generated This Month -->
+        <div class="navy-surface text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span id="kpi-bills-title" class="text-[11px] font-bold uppercase tracking-wider text-blue-200">Bills This Month</span>
+            <div class="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+          <p id="kpi-bills-count" class="text-2xl font-black text-white font-mono">0</p>
+          <p id="kpi-bills-sub" class="text-[11px] text-blue-200/80 mt-1.5">0 sales &bull; 0 purchase</p>
+        </div>
+
+      </div>
+
+      <!-- Secondary Business Statistics Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-7">
+        <div class="card-surface rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-navy-900 flex items-center justify-center font-bold shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Net Cash &amp; Bank</span>
+            <span id="stat-cash-bank" class="text-sm font-extrabold text-navy-900 font-mono">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-navy-900 flex items-center justify-center font-bold shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Parties</span>
+            <span id="stat-total-parties" class="text-sm font-extrabold text-navy-900 font-mono">0</span>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-navy-900 flex items-center justify-center font-bold shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Inventory Items</span>
+            <span id="stat-total-items" class="text-sm font-extrabold text-navy-900 font-mono">0</span>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-navy-900 flex items-center justify-center font-bold shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Net GST Liability</span>
+            <span id="stat-net-gst" class="text-sm font-extrabold text-navy-900 font-mono">₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Chart & Stock / Expenses Summary Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-7">
+
+        <!-- Left 8 Cols: Monthly Sales vs Purchase Bar Chart -->
+        <div class="lg:col-span-8 card-surface rounded-2xl p-6 flex flex-col justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-extrabold text-navy-900">Monthly Sales vs Purchase Overview</h3>
+              <p class="text-xs text-slate-500">Click any month bar to filter dashboard KPIs for that month</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+              <span class="inline-flex items-center gap-1.5 text-navy-900">
+                <span class="w-2.5 h-2.5 rounded-xs bg-navy-900"></span> Sales
+              </span>
+              <span class="inline-flex items-center gap-1.5 text-slate-500">
+                <span class="w-2.5 h-2.5 rounded-xs bg-blue-400"></span> Purchase
+              </span>
+            </div>
+          </div>
+
+          <!-- 12-Month Visual Bar Chart -->
+          <div id="monthly-chart-bars" class="grid grid-cols-12 gap-2 items-end h-48 pt-4 pb-2 border-b border-slate-100"></div>
+          <div class="grid grid-cols-12 gap-2 pt-2 text-center text-[10px] font-mono font-bold text-slate-500">
+            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+            <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+          </div>
+        </div>
+
+        <!-- Right 4 Cols: Cash Flow & Low Stock Alerts -->
+        <div class="lg:col-span-4 card-surface rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-extrabold text-navy-900 mb-1">Financial &amp; Stock Pulse</h3>
+            <p class="text-xs text-slate-500 mb-5">Live summary from active .VPRS tables</p>
+
+            <div class="space-y-3.5 text-xs">
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-slate-700 block">Operating Expenses</span>
+                  <span class="text-[11px] text-slate-400">Recorded vouchers</span>
+                </div>
+                <span id="pulse-expenses" class="font-mono font-extrabold text-navy-900 text-sm">₹0.00</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-slate-700 block">Direct / Other Income</span>
+                  <span class="text-[11px] text-slate-400">Non-invoice receipts</span>
+                </div>
+                <span id="pulse-income" class="font-mono font-extrabold text-emerald-700 text-sm">₹0.00</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-slate-700 block">Stock Valuation</span>
+                  <span id="pulse-low-stock" class="text-[11px] text-slate-400">0 low-stock items</span>
+                </div>
+                <span id="pulse-stock-value" class="font-mono font-extrabold text-navy-900 text-sm">₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between">
+            <a href="daybook.html" class="text-xs font-extrabold text-navy-900 hover:underline">Open Daybook &rarr;</a>
+            <a href="reports.html" class="text-xs font-extrabold text-brand-600 hover:underline">Full Reports &rarr;</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Transactions Table -->
+      <div class="card-surface rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-base font-extrabold text-navy-900">Recent Transactions</h3>
+            <p class="text-xs text-slate-500">Latest sales invoices and purchase bills in selected period</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="add-sale.html" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-navy-900 text-navy-900 hover:text-white text-xs font-bold transition-colors">
+              Record Sale
+            </a>
+            <a href="add-purchase.html" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-navy-900 text-navy-900 hover:text-white text-xs font-bold transition-colors">
+              Record Purchase
+            </a>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <th class="py-3 px-6">Date</th>
+                <th class="py-3 px-4">Voucher No.</th>
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">Party Name</th>
+                <th class="py-3 px-4 text-right">Amount</th>
+                <th class="py-3 px-6 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-transactions-body" class="divide-y divide-slate-100 text-xs">
+              <tr>
+                <td colspan="6" class="py-10 text-center text-slate-400 font-medium">
+                  No vouchers recorded yet for the selected period. Use "+ New Sale" or "+ New Purchase" to begin.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Shut Company Confirmation Modal -->
+  <div id="shut-company-modal" class="hidden fixed inset-0 z-50 bg-navy-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </div>
+      <h3 class="text-base font-extrabold text-navy-900">Shut Active Company?</h3>
+      <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+        This will close the current company session inside your <span class="font-mono font-bold text-navy-900">.VPRS</span> file and return you to the Database Launcher.
+      </p>
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button type="button" id="btn-cancel-shut" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">
+          Cancel
+        </button>
+        <button type="button" id="btn-confirm-shut" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm">
+          Shut Company
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard & Shared .VPRS Engine Script -->
+  <script>
+    const SESSION_DB_NAME = 'AR_VPRS_ACTIVE_HANDOFF_DB';
+    const SESSION_DB_VERSION = 1;
+    const STORE_ACTIVE_HANDLE = 'active_file_handle';
+    const VPRS_MAGIC_HEADER = 'VPRS_AR_BILLING_CONTAINER_V1';
+
+    let activeHandle = null;
+    let activeArchive = null;
+    let cachedHandoffDB = null;
+
+    const CURRENCY_SYMBOLS = {
+      INR: '₹',
+      USD: '$',
+      EUR: '€',
+      GBP: '£'
+    };
+
+    const MONTH_NAMES = {
+      ALL: 'All Months (Full FY)',
+      '01': 'January',
+      '02': 'February',
+      '03': 'March',
+      '04': 'April',
+      '05': 'May',
+      '06': 'June',
+      '07': 'July',
+      '08': 'August',
+      '09': 'September',
+      '10': 'October',
+      '11': 'November',
+      '12': 'December'
+    };
+
+    function enforceZeroBrowserDataStorage() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_) {}
+    }
+
+    function openSessionHandoffDB() {
+      if (cachedHandoffDB) return Promise.resolve(cachedHandoffDB);
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(SESSION_DB_NAME, SESSION_DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_ACTIVE_HANDLE)) {
+            db.createObjectStore(STORE_ACTIVE_HANDLE, { keyPath: 'key' });
+          }
+        };
+        request.onsuccess = () => {
+          cachedHandoffDB = request.result;
+          resolve(cachedHandoffDB);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function fetchActiveHandoffHandle() {
+      const db = await openSessionHandoffDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_ACTIVE_HANDLE, 'readonly');
+        const req = tx.objectStore(STORE_ACTIVE_HANDLE).get('current_vprs');
+        tx.oncomplete = () => resolve(req.result || null);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function readActiveCompanyArchive(handle, requireWrite = false) {
+      if (requireWrite) {
+        let perm = await handle.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') {
+          perm = await handle.requestPermission({ mode: 'readwrite' });
+        }
+        if (perm !== 'granted') {
+          const err = new Error('Write permission required for your .VPRS database.');
+          err.code = 'PERMISSION_NEEDED';
+          throw err;
+        }
+      }
+
+      let file;
+      try {
+        file = await handle.getFile();
+      } catch (_) {
+        const err = new Error('Permission required to read your .VPRS database.');
+        err.code = 'PERMISSION_NEEDED';
+        throw err;
+      }
+
+      const parsed = JSON.parse(await file.text());
+
+      if (!parsed || parsed.format !== VPRS_MAGIC_HEADER) {
+        throw new Error('Invalid .VPRS database signature.');
+      }
+
+      if (Array.isArray(parsed.companies) && parsed.companies.length > 0) {
+        const selected = parsed.companies.find(c => c.companyId === parsed.activeCompanyId) || parsed.companies[0];
+        parsed.activeCompanyId = selected.companyId;
+        parsed.isInitialized = true;
+        parsed.companyProfile = selected.companyProfile;
+        parsed.assets = selected.assets;
+        parsed.tables = selected.tables;
+      }
+
+      if (!parsed.companyProfile || !parsed.companyProfile.companyName) {
+        throw new Error('No active company found inside the selected .VPRS archive.');
+      }
+
+      return parsed;
+    }
+
+    function formatCurrency(amount, currencyCode) {
+      const sym = CURRENCY_SYMBOLS[currencyCode] || '₹';
+      const num = Number(amount) || 0;
+      return sym + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function extractMonthCode(dateStr) {
+      if (!dateStr) return '';
+      const clean = String(dateStr).trim();
+      if (/^\d{4}-\d{2}/.test(clean)) {
+        return clean.slice(5, 7);
+      }
+      const d = new Date(clean);
+      if (!isNaN(d.getTime())) {
+        return String(d.getMonth() + 1).padStart(2, '0');
+      }
+      return '';
+    }
+
+    function isVoucherCancelled(rec) {
+      if (!rec || typeof rec !== 'object') return false;
+      return Boolean(rec.isCancelled || String(rec.status || '').toUpperCase() === 'CANCELLED');
+    }
+
+    function renderHeaderBranding(archive, fileName) {
+      const profile = archive.companyProfile || {};
+      const logoSrc = (archive.assets && (archive.assets.logo || (archive.assets.images && archive.assets.images.company_logo && archive.assets.images.company_logo.dataUrl))) || null;
+      const logoBox = document.getElementById('header-company-logo');
+
+      if (logoSrc) {
+        logoBox.innerHTML = `<img src="${logoSrc}" alt="${escapeHtml(profile.companyName)}" class="w-full h-full object-contain p-1 bg-white" />`;
+      } else {
+        const initials = (profile.companyName || 'AR').substring(0, 2).toUpperCase();
+        document.getElementById('header-company-initials').textContent = initials;
+      }
+
+      document.getElementById('header-company-name').textContent = profile.companyName || 'Company Workspace';
+      document.getElementById('dash-subtitle-company').textContent = profile.companyName || 'your company';
+      document.getElementById('header-fy-tag').textContent = `FY ${profile.financialYear || '2026-2027'}`;
+      document.getElementById('header-company-gstin').textContent = profile.gstin ? `GSTIN: ${profile.gstin}` : 'Unregistered Entity';
+      document.getElementById('header-vprs-file').textContent = fileName || '';
+
+      if (archive.activeSession && archive.activeSession.fullName) {
+        document.getElementById('header-active-user').textContent = archive.activeSession.fullName;
+      }
+    }
+
+    function computeAndRenderDashboard() {
+      if (!activeArchive) return;
+
+      const selectedMonth = document.getElementById('filter-month').value;
+      const profile = activeArchive.companyProfile || {};
+      const currency = profile.currency || 'INR';
+      const tables = activeArchive.tables || {};
+      const salesList = (Array.isArray(tables.sales_invoices) ? tables.sales_invoices : []).filter(v => !isVoucherCancelled(v));
+      const purchaseList = (Array.isArray(tables.purchase_bills) ? tables.purchase_bills : []).filter(v => !isVoucherCancelled(v));
+      const creditNotesList = (Array.isArray(tables.credit_notes) ? tables.credit_notes : []).filter(v => !isVoucherCancelled(v));
+      const debitNotesList = (Array.isArray(tables.debit_notes) ? tables.debit_notes : []).filter(v => !isVoucherCancelled(v));
+      const receiptsList = (Array.isArray(tables.receipts) ? tables.receipts : []).filter(v => !isVoucherCancelled(v));
+      const paymentsList = (Array.isArray(tables.payments) ? tables.payments : []).filter(v => !isVoucherCancelled(v));
+      const expensesList = (Array.isArray(tables.expenses) ? tables.expenses : []).filter(v => !isVoucherCancelled(v));
+      const incomeList = (Array.isArray(tables.income) ? tables.income : []).filter(v => !isVoucherCancelled(v));
+      const contraList = (Array.isArray(tables.contra_vouchers) ? tables.contra_vouchers : []).filter(v => !isVoucherCancelled(v));
+      const journalList = (Array.isArray(tables.journal_entries) ? tables.journal_entries : []).filter(v => !isVoucherCancelled(v));
+      const inventoryList = Array.isArray(tables.inventory) ? tables.inventory : [];
+      const bankAccounts = Array.isArray(tables.banking_accounts) ? tables.banking_accounts : [];
+      const ledgerAccounts = Array.isArray(tables.ledger_accounts) ? tables.ledger_accounts : [];
+
+      // Merge unified parties + legacy customers/suppliers without duplicates
+      const mergedPartyMap = new Map();
+      (Array.isArray(tables.parties) ? tables.parties : []).forEach((p) => {
+        const key = p.id || p.partyId;
+        if (key) mergedPartyMap.set(key, { ...p, under: p.under || 'DEBTORS' });
+      });
+      (Array.isArray(tables.customers) ? tables.customers : []).forEach((c) => {
+        const key = c.id || c.partyId;
+        if (key && !mergedPartyMap.has(key)) mergedPartyMap.set(key, { ...c, under: c.under || 'DEBTORS' });
+      });
+      (Array.isArray(tables.suppliers) ? tables.suppliers : []).forEach((s) => {
+        const key = s.id || s.partyId;
+        if (key && !mergedPartyMap.has(key)) mergedPartyMap.set(key, { ...s, under: s.under || 'CREDITORS' });
+      });
+      const mergedParties = Array.from(mergedPartyMap.values());
+
+      const matchesMonth = (item) => {
+        if (selectedMonth === 'ALL') return true;
+        const m = extractMonthCode(item.date || item.invoiceDate || item.billDate || item.createdAt);
+        return m === selectedMonth;
+      };
+
+      const isUpToSelectedMonth = (item) => {
+        if (selectedMonth === 'ALL') return true;
+        const m = extractMonthCode(item.date || item.invoiceDate || item.billDate || item.createdAt);
+        return !m || m <= selectedMonth;
+      };
+
+      const filteredSales = salesList.filter(matchesMonth);
+      const filteredPurchases = purchaseList.filter(matchesMonth);
+      const filteredCreditNotes = creditNotesList.filter(matchesMonth);
+      const filteredDebitNotes = debitNotesList.filter(matchesMonth);
+      const filteredReceipts = receiptsList.filter(matchesMonth);
+      const filteredPayments = paymentsList.filter(matchesMonth);
+      const filteredExpenses = expensesList.filter(matchesMonth);
+      const filteredIncome = incomeList.filter(matchesMonth);
+
+      const cumulativeSales = salesList.filter(isUpToSelectedMonth);
+      const cumulativePurchases = purchaseList.filter(isUpToSelectedMonth);
+      const cumulativeCreditNotes = creditNotesList.filter(isUpToSelectedMonth);
+      const cumulativeDebitNotes = debitNotesList.filter(isUpToSelectedMonth);
+      const cumulativeReceipts = receiptsList.filter(isUpToSelectedMonth);
+      const cumulativePayments = paymentsList.filter(isUpToSelectedMonth);
+      const cumulativeExpenses = expensesList.filter(isUpToSelectedMonth);
+      const cumulativeIncome = incomeList.filter(isUpToSelectedMonth);
+      const cumulativeContra = contraList.filter(isUpToSelectedMonth);
+      const cumulativeJournal = journalList.filter(isUpToSelectedMonth);
+
+      // Period Sales, Purchase & GST Totals (matching Tax System Output CGST/SGST/IGST & Input CGST/SGST/IGST)
+      let totalSales = 0;
+      let outputGst = 0;
+
+      filteredSales.forEach((inv) => {
+        const grand = Number(inv.grandTotal ?? inv.totalAmount ?? inv.amount ?? 0);
+        totalSales += grand;
+        const explicitTax = Number(inv.cgstAmount ?? 0) + Number(inv.sgstAmount ?? 0) + Number(inv.igstAmount ?? 0);
+        outputGst += explicitTax > 0 ? explicitTax : Number(inv.taxAmount ?? inv.gstAmount ?? 0);
+      });
+
+      filteredCreditNotes.forEach((cn) => {
+        const explicitTax = Number(cn.cgstAmount ?? 0) + Number(cn.sgstAmount ?? 0) + Number(cn.igstAmount ?? 0);
+        outputGst -= explicitTax > 0 ? explicitTax : Number(cn.taxAmount ?? cn.gstAmount ?? 0);
+      });
+
+      let totalPurchase = 0;
+      let inputGst = 0;
+
+      filteredPurchases.forEach((bill) => {
+        const grand = Number(bill.grandTotal ?? bill.totalAmount ?? bill.amount ?? 0);
+        totalPurchase += grand;
+        const explicitTax = Number(bill.cgstAmount ?? 0) + Number(bill.sgstAmount ?? 0) + Number(bill.igstAmount ?? 0);
+        inputGst += explicitTax > 0 ? explicitTax : Number(bill.taxAmount ?? bill.gstAmount ?? 0);
+      });
+
+      filteredDebitNotes.forEach((dn) => {
+        const explicitTax = Number(dn.cgstAmount ?? 0) + Number(dn.sgstAmount ?? 0) + Number(dn.igstAmount ?? 0);
+        inputGst -= explicitTax > 0 ? explicitTax : Number(dn.taxAmount ?? dn.gstAmount ?? 0);
+      });
+
+      // Accurate Net Receivable (Dr) & Net Payable (Cr) across all Parties (Opening Balance + Vouchers - Receipts/Payments)
+      let totalReceivable = 0;
+      let totalPayable = 0;
+      let receivablePartiesCount = 0;
+      let payablePartiesCount = 0;
+
+      if (mergedParties.length > 0) {
+        mergedParties.forEach((party) => {
+          const opAmt = Number(party.openingBalance || 0);
+          const opType = String(party.balanceType || (party.under === 'CREDITORS' ? 'CR' : 'DR')).toUpperCase();
+          let signed = opType === 'CR' ? -opAmt : opAmt;
+
+          const partyId = party.id || party.partyId;
+          const pNameLower = String(party.name || party.partyName || '').trim().toLowerCase();
+
+          const matchesParty = (rec) => {
+            if (!rec) return false;
+            if (rec.partyId && rec.partyId === partyId) return true;
+            if (rec.customerId && rec.customerId === partyId) return true;
+            if (rec.supplierId && rec.supplierId === partyId) return true;
+            const rName = String(rec.partyName || rec.customerName || rec.supplierName || '').trim().toLowerCase();
+            return pNameLower && rName === pNameLower;
+          };
+
+          cumulativeSales.forEach((inv) => {
+            if (matchesParty(inv)) {
+              const g = Number(inv.grandTotal ?? inv.totalAmount ?? inv.amount ?? 0);
+              const pd = Number(inv.paidAmount ?? inv.receivedAmount ?? (String(inv.status || '').toUpperCase() === 'PAID' ? g : 0));
+              signed += (g - pd);
+            }
+          });
+
+          cumulativePurchases.forEach((bill) => {
+            if (matchesParty(bill)) {
+              const g = Number(bill.grandTotal ?? bill.totalAmount ?? bill.amount ?? 0);
+              const pd = Number(bill.paidAmount ?? (String(bill.status || '').toUpperCase() === 'PAID' ? g : 0));
+              signed -= (g - pd);
+            }
+          });
+
+          cumulativeReceipts.forEach((r) => {
+            if (matchesParty(r)) signed -= Number(r.amount || 0);
+          });
+
+          cumulativePayments.forEach((py) => {
+            if (matchesParty(py)) signed += Number(py.amount || 0);
+          });
+
+          cumulativeCreditNotes.forEach((cn) => {
+            if (matchesParty(cn)) signed -= Number(cn.grandTotal ?? cn.amount ?? 0);
+          });
+
+          cumulativeDebitNotes.forEach((dn) => {
+            if (matchesParty(dn)) signed += Number(dn.grandTotal ?? dn.amount ?? 0);
+          });
+
+          if (signed > 0) {
+            totalReceivable += signed;
+            receivablePartiesCount++;
+          } else if (signed < 0) {
+            totalPayable += Math.abs(signed);
+            payablePartiesCount++;
+          }
+        });
+      } else {
+        // Fallback when vouchers exist without master party entries
+        cumulativeSales.forEach((inv) => {
+          const g = Number(inv.grandTotal ?? inv.totalAmount ?? inv.amount ?? 0);
+          const pd = Number(inv.paidAmount ?? inv.receivedAmount ?? (String(inv.status || '').toUpperCase() === 'PAID' ? g : 0));
+          const due = inv.balanceDue !== undefined ? Number(inv.balanceDue) : Math.max(0, g - pd);
+          if (due > 0) totalReceivable += due;
+        });
+        cumulativePurchases.forEach((bill) => {
+          const g = Number(bill.grandTotal ?? bill.totalAmount ?? bill.amount ?? 0);
+          const pd = Number(bill.paidAmount ?? (String(bill.status || '').toUpperCase() === 'PAID' ? g : 0));
+          const due = bill.balanceDue !== undefined ? Number(bill.balanceDue) : Math.max(0, g - pd);
+          if (due > 0) totalPayable += due;
+        });
+      }
+
+      document.getElementById('dashboard-period-badge').textContent = MONTH_NAMES[selectedMonth] || 'All Months (Full FY)';
+      document.getElementById('kpi-total-sales').textContent = formatCurrency(totalSales, currency);
+      document.getElementById('kpi-sales-sub').textContent = `${filteredSales.length} ${filteredSales.length === 1 ? 'invoice' : 'invoices'} recorded`;
+      document.getElementById('kpi-total-purchase').textContent = formatCurrency(totalPurchase, currency);
+      document.getElementById('kpi-purchase-sub').textContent = `${filteredPurchases.length} purchase ${filteredPurchases.length === 1 ? 'bill' : 'bills'}`;
+      document.getElementById('kpi-total-receivable').textContent = formatCurrency(totalReceivable, currency);
+      document.getElementById('kpi-receivable-sub').textContent = receivablePartiesCount > 0
+        ? `Across ${receivablePartiesCount} ${receivablePartiesCount === 1 ? 'party' : 'parties'}`
+        : 'Pending customer dues';
+      document.getElementById('kpi-total-payable').textContent = formatCurrency(totalPayable, currency);
+      document.getElementById('kpi-payable-sub').textContent = payablePartiesCount > 0
+        ? `Across ${payablePartiesCount} ${payablePartiesCount === 1 ? 'party' : 'parties'}`
+        : 'Pending supplier dues';
+
+      const billsTotalCount = filteredSales.length + filteredPurchases.length;
+      document.getElementById('kpi-bills-title').textContent = selectedMonth === 'ALL' ? 'Total Bills' : `Bills (${MONTH_NAMES[selectedMonth]})`;
+      document.getElementById('kpi-bills-count').textContent = String(billsTotalCount);
+      document.getElementById('kpi-bills-sub').textContent = `${filteredSales.length} sales • ${filteredPurchases.length} purchase`;
+
+      // Secondary Stats (Cash-in-hand ledgers + Cash/Bank Vouchers + Bank Accounts + Merged Parties + Net GST)
+      let cashLedgersTotal = ledgerAccounts
+        .filter(a => a.id === 'acc_cash' || a.underGroupId === 'CASH_IN_HAND' || String(a.under || '').toLowerCase() === 'cash-in-hand')
+        .reduce((sum, a) => {
+          const op = Number(a.openingBalance || 0) * (String(a.balanceType).toUpperCase() === 'CR' ? -1 : 1);
+          return sum + op;
+        }, 0);
+      let bankBal = bankAccounts.reduce((sum, b) => sum + Number(b.balance ?? b.openingBalance ?? 0), 0);
+
+      cumulativeSales.forEach((inv) => {
+        const mode = String(inv.saleMode || inv.paymentMode || '').toUpperCase();
+        const paid = Number(inv.paidAmount ?? inv.receivedAmount ?? (mode === 'CASH' || String(inv.status || '').toUpperCase() === 'PAID' ? (inv.grandTotal ?? inv.totalAmount ?? inv.amount ?? 0) : 0));
+        if (paid > 0) {
+          if (mode === 'BANK' || inv.bankAccountId) bankBal += paid;
+          else cashLedgersTotal += paid;
+        }
+      });
+
+      cumulativePurchases.forEach((bill) => {
+        const mode = String(bill.purchaseMode || bill.paymentMode || '').toUpperCase();
+        const paid = Number(bill.paidAmount ?? (mode === 'CASH' || String(bill.status || '').toUpperCase() === 'PAID' ? (bill.grandTotal ?? bill.totalAmount ?? bill.amount ?? 0) : 0));
+        if (paid > 0) {
+          if (mode === 'BANK' || bill.bankAccountId) bankBal -= paid;
+          else cashLedgersTotal -= paid;
+        }
+      });
+
+      cumulativeReceipts.forEach((r) => {
+        const amt = Number(r.amount || 0);
+        if (String(r.mode || r.paymentMode || '').toUpperCase() === 'BANK' || r.bankAccountId) bankBal += amt;
+        else cashLedgersTotal += amt;
+      });
+
+      cumulativePayments.forEach((py) => {
+        const amt = Number(py.amount || 0);
+        if (String(py.mode || py.paymentMode || '').toUpperCase() === 'BANK' || py.bankAccountId) bankBal -= amt;
+        else cashLedgersTotal -= amt;
+      });
+
+      cumulativeExpenses.forEach((exp) => {
+        const amt = Number(exp.amount || 0);
+        if (String(exp.paymentMode || '').toUpperCase() === 'BANK' || exp.bankAccountId) bankBal -= amt;
+        else cashLedgersTotal -= amt;
+      });
+
+      cumulativeIncome.forEach((inc) => {
+        const amt = Number(inc.amount || 0);
+        if (String(inc.paymentMode || '').toUpperCase() === 'BANK' || inc.bankAccountId) bankBal += amt;
+        else cashLedgersTotal += amt;
+      });
+
+      cumulativeContra.forEach((ct) => {
+        const amt = Number(ct.amount || 0);
+        const fromType = String(ct.fromType || '').toUpperCase();
+        const toType = String(ct.toType || '').toUpperCase();
+        if (fromType === 'CASH' || ct.fromAccountId === 'acc_cash') cashLedgersTotal -= amt;
+        else if (ct.fromAccountId) bankBal -= amt;
+        if (toType === 'CASH' || ct.toAccountId === 'acc_cash') cashLedgersTotal += amt;
+        else if (ct.toAccountId) bankBal += amt;
+      });
+
+      cumulativeJournal.forEach((je) => {
+        const amt = Number(je.amount || 0);
+        const drId = je.debitLedgerId;
+        const crId = je.creditLedgerId;
+        if (drId === 'acc_cash') cashLedgersTotal += amt;
+        else if (drId && bankAccounts.some(b => (b.id || b.accountId) === drId)) bankBal += amt;
+        if (crId === 'acc_cash') cashLedgersTotal -= amt;
+        else if (crId && bankAccounts.some(b => (b.id || b.accountId) === crId)) bankBal -= amt;
+      });
+
+      document.getElementById('stat-cash-bank').textContent = formatCurrency(cashLedgersTotal + bankBal, currency);
+      document.getElementById('stat-total-parties').textContent = String(mergedParties.length);
+      document.getElementById('stat-total-items').textContent = String(inventoryList.length);
+      document.getElementById('stat-net-gst').textContent = formatCurrency(Math.max(0, outputGst - inputGst), currency);
+
+      // Financial & Stock Pulse (including General Ledger Indirect/Direct Expenses & Incomes)
+      const ledgerExpTotal = ledgerAccounts
+        .filter(a => a.underGroupId === 'DIRECT_EXPENSES' || a.underGroupId === 'INDIRECT_EXPENSES')
+        .reduce((s, a) => s + Number(a.openingBalance || 0), 0);
+      const ledgerIncTotal = ledgerAccounts
+        .filter(a => a.underGroupId === 'DIRECT_INCOMES' || a.underGroupId === 'INDIRECT_INCOMES')
+        .reduce((s, a) => s + Number(a.openingBalance || 0), 0);
+
+      const expTotal = ledgerExpTotal + filteredExpenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+      const incTotal = ledgerIncTotal + filteredIncome.reduce((s, i) => s + Number(i.amount || 0), 0);
+      let stockVal = 0;
+      let lowStockCount = 0;
+
+      inventoryList.forEach((item) => {
+        const qty = Number(item.stock ?? item.quantity ?? 0);
+        const rate = Number(item.purchasePrice ?? item.rate ?? 0);
+        const minQty = Number(item.lowStockAlert ?? 5);
+        stockVal += qty * rate;
+        if (qty <= minQty) lowStockCount++;
+      });
+
+      document.getElementById('pulse-expenses').textContent = formatCurrency(expTotal, currency);
+      document.getElementById('pulse-income').textContent = formatCurrency(incTotal, currency);
+      document.getElementById('pulse-stock-value').textContent = formatCurrency(stockVal, currency);
+      document.getElementById('pulse-low-stock').textContent = `${lowStockCount} low-stock item${lowStockCount === 1 ? '' : 's'}`;
+
+      renderMonthlyChart(salesList, purchaseList, selectedMonth);
+      renderRecentTransactions(filteredSales, filteredPurchases, currency);
+    }
+
+    function renderMonthlyChart(salesList, purchaseList, selectedMonth) {
+      const container = document.getElementById('monthly-chart-bars');
+      const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+
+      const monthlyData = months.map((m) => {
+        const sSum = salesList
+          .filter(s => extractMonthCode(s.date || s.invoiceDate || s.createdAt) === m)
+          .reduce((acc, s) => acc + Number(s.grandTotal ?? s.totalAmount ?? s.amount ?? 0), 0);
+        const pSum = purchaseList
+          .filter(p => extractMonthCode(p.date || p.billDate || p.createdAt) === m)
+          .reduce((acc, p) => acc + Number(p.grandTotal ?? p.totalAmount ?? p.amount ?? 0), 0);
+        return { month: m, sales: sSum, purchase: pSum };
+      });
+
+      const maxVal = Math.max(1, ...monthlyData.map(d => Math.max(d.sales, d.purchase)));
+
+      container.innerHTML = monthlyData.map((d) => {
+        const salesHeight = d.sales > 0 ? Math.max(8, Math.round((d.sales / maxVal) * 100)) : 4;
+        const purchaseHeight = d.purchase > 0 ? Math.max(8, Math.round((d.purchase / maxVal) * 100)) : 4;
+        const isHighlighted = selectedMonth === d.month;
+
+        return `
+          <button
+            type="button"
+            data-chart-month="${d.month}"
+            title="${MONTH_NAMES[d.month]} — Click to filter"
+            class="h-full flex items-end justify-center gap-1 px-0.5 rounded-lg transition-colors ${isHighlighted ? 'bg-blue-50 ring-1 ring-navy-900/20' : 'hover:bg-slate-50'}"
+          >
+            <div style="height: ${salesHeight}%" class="w-2 sm:w-2.5 rounded-t bg-navy-900 transition-all"></div>
+            <div style="height: ${purchaseHeight}%" class="w-2 sm:w-2.5 rounded-t bg-blue-400 transition-all"></div>
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('[data-chart-month]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const clicked = btn.getAttribute('data-chart-month');
+          const selectEl = document.getElementById('filter-month');
+          selectEl.value = (selectEl.value === clicked) ? 'ALL' : clicked;
+          computeAndRenderDashboard();
+        });
+      });
+    }
+
+    function renderRecentTransactions(salesList, purchaseList, currency) {
+      const tbody = document.getElementById('recent-transactions-body');
+      if (!tbody) return;
+
+      const combined = [
+        ...salesList.map((s, i) => ({
+          date: String(s.date || s.invoiceDate || (s.createdAt ? s.createdAt.slice(0, 10) : '')),
+          voucherNo: s.invoiceNo || s.voucherNo || `SALE-${i + 1}`,
+          type: 'Sales Invoice',
+          party: s.partyName || s.customerName || (s.saleMode === 'CASH' ? 'Cash Sale' : 'Customer'),
+          amount: Number(s.grandTotal ?? s.totalAmount ?? s.amount ?? 0),
+          status: s.status || 'ACTIVE',
+          isSale: true
+        })),
+        ...purchaseList.map((p, i) => ({
+          date: String(p.date || p.billDate || (p.createdAt ? p.createdAt.slice(0, 10) : '')),
+          voucherNo: p.billNo || p.voucherNo || `PUR-${i + 1}`,
+          type: 'Purchase Bill',
+          party: p.partyName || p.supplierName || 'Supplier',
+          amount: Number(p.grandTotal ?? p.totalAmount ?? p.amount ?? 0),
+          status: p.status || 'ACTIVE',
+          isSale: false
+        }))
+      ].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 10);
+
+      if (combined.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-10 text-center text-slate-400 font-medium">
+              No vouchers recorded yet for the selected period. Use "+ New Sale" or "+ New Purchase" to begin.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = combined.map((row) => `
+        <tr class="hover:bg-slate-50/80 transition-colors">
+          <td class="py-3 px-6 font-mono text-slate-600">${escapeHtml(row.date || '-')}</td>
+          <td class="py-3 px-4 font-mono font-bold text-navy-900">${escapeHtml(row.voucherNo)}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${row.isSale ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
+              ${escapeHtml(row.type)}
+            </span>
+          </td>
+          <td class="py-3 px-4 font-bold text-slate-800">${escapeHtml(row.party)}</td>
+          <td class="py-3 px-4 text-right font-mono font-extrabold text-navy-900">${formatCurrency(row.amount, currency)}</td>
+          <td class="py-3 px-6 text-right">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-700">
+              ${escapeHtml(row.status)}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    const sidebarEl = document.getElementById('app-sidebar');
+    const toggleSidebarBtn = document.getElementById('btn-toggle-sidebar');
+    if (toggleSidebarBtn && sidebarEl) {
+      toggleSidebarBtn.addEventListener('click', () => {
+        sidebarEl.classList.toggle('is-collapsed');
+      });
+    }
+
+    document.querySelectorAll('[data-accordion]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (sidebarEl && sidebarEl.classList.contains('is-collapsed')) {
+          sidebarEl.classList.remove('is-collapsed');
+        }
+        const targetId = btn.getAttribute('data-accordion');
+        const panel = document.getElementById(targetId);
+        if (!panel) return;
+        const chevron = btn.querySelector('.sidebar-chevron');
+        const isOpening = panel.classList.contains('hidden');
+
+        // Close other open submenus for clean desktop navigation
+        document.querySelectorAll('.submenu-panel').forEach((p) => {
+          if (p.id !== targetId) p.classList.add('hidden');
+        });
+        document.querySelectorAll('.sidebar-chevron').forEach((c) => {
+          if (c !== chevron) c.classList.remove('rotate-180');
+        });
+
+        panel.classList.toggle('hidden', !isOpening);
+        if (chevron) chevron.classList.toggle('rotate-180', isOpening);
+      });
+    });
+
+    // Switch Company & Shut Company Actions
+    document.getElementById('btn-switch-company').addEventListener('click', () => {
+      window.location.replace('company.html');
+    });
+
+    // Pass active company snapshot via window.name on navigation so file:// sub-pages load company immediately
+    document.querySelectorAll('a[href$=".html"]').forEach((anchor) => {
+      anchor.addEventListener('click', () => {
+        if (!activeArchive) return;
+        try {
+          const snap = encodeURIComponent(JSON.stringify({
+            archive: activeArchive,
+            fileName: activeHandle ? activeHandle.name : ''
+          }));
+          if (snap.length < 4000000) {
+            const cleanBase = String(window.name || '').split('__AR_ARCHIVE_SNAPSHOT__=')[0];
+            window.name = `${cleanBase}__AR_ARCHIVE_SNAPSHOT__=${snap}`;
+          }
+        } catch (_) {}
+      });
+    });
+
+    const shutModal = document.getElementById('shut-company-modal');
+    document.getElementById('btn-shut-company').addEventListener('click', () => {
+      shutModal.classList.remove('hidden');
+    });
+    document.getElementById('btn-cancel-shut').addEventListener('click', () => {
+      shutModal.classList.add('hidden');
+    });
+    document.getElementById('btn-confirm-shut').addEventListener('click', async () => {
+      try {
+        if (activeHandle && activeArchive) {
+          activeArchive.activeSession = null;
+          activeArchive.updatedAt = new Date().toISOString();
+          const writable = await activeHandle.createWritable();
+          await writable.write(JSON.stringify(activeArchive));
+          await writable.close();
+        }
+        const db = await openSessionHandoffDB();
+        await new Promise((resolve) => {
+          const tx = db.transaction(STORE_ACTIVE_HANDLE, 'readwrite');
+          tx.objectStore(STORE_ACTIVE_HANDLE).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+      } catch (_) {}
+      enforceZeroBrowserDataStorage();
+      window.location.replace('index.html');
+    });
+
+    document.getElementById('filter-month').addEventListener('change', computeAndRenderDashboard);
+
+    document.getElementById('btn-regrant-vprs').addEventListener('click', async () => {
+      if (!activeHandle) return;
+      try {
+        activeArchive = await readActiveCompanyArchive(activeHandle, true);
+        document.getElementById('session-warning-box').classList.add('hidden');
+        renderHeaderBranding(activeArchive, activeHandle.name);
+        computeAndRenderDashboard();
+      } catch (err) {
+        document.getElementById('session-warning-desc').textContent = err.message;
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function initMainPortal() {
+      enforceZeroBrowserDataStorage();
+      const warningBox = document.getElementById('session-warning-box');
+
+      try {
+        const handoff = await fetchActiveHandoffHandle();
+        if (!handoff || !handoff.handle) {
+          try {
+            const rawName = String(window.name || '');
+            const marker = '__AR_ARCHIVE_SNAPSHOT__=';
+            const idx = rawName.indexOf(marker);
+            if (idx !== -1) {
+              const snap = JSON.parse(decodeURIComponent(rawName.slice(idx + marker.length)));
+              if (snap && snap.archive) {
+                activeArchive = snap.archive;
+                renderHeaderBranding(activeArchive, snap.fileName || '');
+                computeAndRenderDashboard();
+                return;
+              }
+            }
+          } catch (_) {}
+
+          warningBox.classList.remove('hidden');
+          document.getElementById('session-warning-title').textContent = 'No Active .VPRS Company Session';
+          document.getElementById('session-warning-desc').textContent = 'Please select or create your .VPRS database file from the launcher.';
+          document.getElementById('btn-regrant-vprs').classList.add('hidden');
+          return;
+        }
+
+        activeHandle = handoff.handle;
+        try {
+          activeArchive = await readActiveCompanyArchive(activeHandle, false);
+          renderHeaderBranding(activeArchive, activeHandle.name);
+          computeAndRenderDashboard();
+        } catch (err) {
+          warningBox.classList.remove('hidden');
+          document.getElementById('session-warning-title').textContent = 'Unlock Company Database';
+          document.getElementById('session-warning-desc').textContent = err.message;
+        }
+      } catch (err) {
+        warningBox.classList.remove('hidden');
+        document.getElementById('session-warning-desc').textContent = err.message;
+      }
+    }
+
+    initMainPortal();
+  </script>
+</body>
+</html>

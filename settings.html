@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Offline Billing Software — General Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#030712',
+              900: '#071126',
+              800: '#0d1d3d',
+              700: '#152b59',
+              600: '#1e3c78',
+            },
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #f3f6fa;
+      user-select: none;
+    }
+
+    .navy-surface {
+      background: linear-gradient(165deg, #040a18 0%, #071126 55%, #0d1d3d 100%);
+    }
+
+    .card-surface {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 26px -12px rgba(7, 17, 38, 0.08), 0 2px 8px -2px rgba(7, 17, 38, 0.03);
+    }
+
+    #settings-sidebar {
+      width: 264px;
+      transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #settings-sidebar.is-collapsed {
+      width: 76px;
+    }
+
+    #settings-sidebar.is-collapsed .sidebar-label,
+    #settings-sidebar.is-collapsed .sidebar-section-title {
+      display: none !important;
+    }
+
+    #settings-sidebar.is-collapsed .nav-item-btn {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .form-input {
+      background-color: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #071126;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+    }
+
+    .form-input:focus {
+      background-color: #ffffff;
+      border-color: #0d1d3d;
+      box-shadow: 0 0 0 3px rgba(13, 29, 61, 0.09);
+      outline: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.45);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7);
+    }
+  </style>
+</head>
+<body class="text-slate-900 h-screen overflow-hidden flex flex-col antialiased selection:bg-navy-900 selection:text-white">
+
+  <!-- Top Application Header -->
+  <header class="h-16 navy-surface text-white border-b border-navy-700/70 px-4 sm:px-6 flex items-center justify-between z-40 shadow-lg shrink-0">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <button
+        type="button"
+        id="btn-toggle-sidebar"
+        title="Collapse / Expand Settings Sidebar"
+        class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors shrink-0 focus:outline-none"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+      </button>
+
+      <a href="main.html" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-bold transition-colors shrink-0">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span class="hidden sm:inline">Dashboard</span>
+      </a>
+
+      <div class="h-7 w-px bg-white/15 hidden sm:block"></div>
+
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="header-company-logo" class="w-10 h-10 rounded-xl bg-white text-navy-900 flex items-center justify-center font-black text-sm shadow-md overflow-hidden shrink-0">
+          <span id="header-company-initials">AR</span>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 id="header-company-name" class="font-extrabold text-sm sm:text-base text-white truncate tracking-tight">
+              Loading Company...
+            </h1>
+            <span id="header-fy-tag" class="hidden md:inline-block text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/10 text-blue-200 border border-white/15 shrink-0">
+              FY 2026-2027
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-blue-200/80 truncate">
+            <span class="font-bold text-white">Settings &rarr; General</span>
+            <span class="hidden sm:inline">&bull;</span>
+            <span id="header-vprs-file" class="hidden sm:inline font-mono text-emerald-300 truncate"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5 shrink-0">
+      <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-blue-100">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="header-active-user" class="font-semibold">Admin</span>
+      </div>
+
+      <button
+        type="button"
+        id="btn-switch-company"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold transition-all"
+      >
+        <svg class="w-3.5 h-3.5 text-blue-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+        <span class="hidden sm:inline">Switch Company</span>
+      </button>
+
+      <button
+        type="button"
+        id="btn-shut-company"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-500/90 hover:bg-red-600 text-white text-xs font-bold shadow-sm transition-all"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Shut Company</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Container -->
+  <div class="flex-1 flex min-h-0 overflow-hidden">
+
+    <!-- Dedicated Settings Category Sidebar -->
+    <aside id="settings-sidebar" class="navy-surface text-slate-200 border-r border-navy-700/60 h-full overflow-hidden flex flex-col justify-between shrink-0 select-none">
+      <nav class="p-3 space-y-1.5 overflow-y-auto overscroll-contain flex-1 min-h-0" aria-label="Settings Categories">
+        <div class="sidebar-section-title px-3 pt-2 pb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-blue-300/60">
+          Settings Categories
+        </div>
+
+        <a href="settings.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white text-navy-900 font-extrabold text-xs shadow-md transition-all">
+          <svg class="w-4 h-4 shrink-0 text-navy-900" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <span class="sidebar-label truncate">General</span>
+        </a>
+
+        <a href="settings-tax.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+          </svg>
+          <span class="sidebar-label truncate">Tax System</span>
+        </a>
+
+        <a href="settings-ledgers.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span class="sidebar-label truncate">Ledgers</span>
+        </a>
+
+        <a href="settings-display-ledgers.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-indigo-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <span class="sidebar-label truncate">Display Ledgers</span>
+        </a>
+
+        <a href="settings-exports.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span class="sidebar-label truncate">Exports</span>
+        </a>
+
+        <button type="button" id="btn-sidebar-change-fy" class="nav-item-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <span class="flex items-center gap-3 min-w-0">
+            <svg class="w-4 h-4 shrink-0 text-cyan-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="sidebar-label truncate">Financial Year</span>
+          </span>
+          <span id="sidebar-fy-pill" class="sidebar-label text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-cyan-200 shrink-0">
+            2026-27
+          </span>
+        </button>
+
+        <div class="sidebar-section-title px-3 pt-5 pb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-blue-300/60">
+          Navigation
+        </div>
+
+        <a href="main.html" class="nav-item-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-blue-200 hover:bg-white/10 hover:text-white font-semibold text-xs transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span class="sidebar-label truncate">Back to Main Portal</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-white/10 shrink-0">
+        <div class="px-3 py-2 rounded-xl bg-white/5 flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+          <span class="sidebar-label text-[11px] font-mono text-blue-200 truncate">Direct .VPRS Connected</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main General Settings Content Stage -->
+    <main id="settings-main-stage" class="flex-1 h-full p-5 sm:p-8 overflow-y-auto overscroll-contain">
+
+      <!-- Permission / Missing Session Fallback Banner -->
+      <div id="session-warning-box" class="hidden mb-6 card-surface rounded-2xl p-6 border-amber-300 bg-amber-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 id="session-warning-title" class="text-sm font-extrabold text-amber-950">Database Access Needed</h3>
+          <p id="session-warning-desc" class="text-xs text-amber-900 mt-1">Grant permission to save general settings to your .VPRS file.</p>
+        </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button type="button" id="btn-regrant-vprs" class="px-4 py-2 rounded-xl bg-navy-900 text-white text-xs font-bold hover:bg-navy-800">
+            Unlock .VPRS File
+          </button>
+          <a href="index.html" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50">
+            Launcher
+          </a>
+        </div>
+      </div>
+
+      <!-- Top-Right 2-Second Floating Toast Notification -->
+      <div id="settings-feedback-banner" class="hidden fixed top-20 right-6 z-50 w-full max-w-sm rounded-2xl p-4 border bg-white/95 backdrop-blur-md flex items-start justify-between gap-3.5 shadow-2xl transition-all">
+        <div class="flex items-start gap-3">
+          <span id="feedback-icon" class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"></span>
+          <div>
+            <h4 id="feedback-title" class="text-xs font-extrabold"></h4>
+            <p id="feedback-message" class="text-xs opacity-90 mt-0.5 leading-relaxed"></p>
+          </div>
+        </div>
+        <button type="button" onclick="dismissFeedbackToast()" class="text-slate-400 hover:text-slate-700 p-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="mb-6">
+        <h2 class="text-2xl font-extrabold text-navy-900 tracking-tight">General Settings</h2>
+        <p class="text-xs text-slate-500 mt-1">
+          Configure voucher types, custom prefix/suffix numbering across all vouchers, and invoice print options inside your <span class="font-mono font-bold text-navy-900">.VPRS</span> file.
+        </p>
+      </div>
+
+      <div class="w-full space-y-6 pb-10">
+
+        <!-- Voucher Types & Invoice Print Options -->
+        <div class="card-surface rounded-2xl p-6 space-y-5">
+          <div>
+            <h3 class="text-base font-extrabold text-navy-900">Voucher Features &amp; Bill Print Options</h3>
+            <p class="text-xs text-slate-500">Delivery Note and Receipt Note stay enabled; toggle bill timestamp printing</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
+              <div>
+                <span class="font-extrabold text-navy-900 block">Delivery Note</span>
+                <span class="text-[11px] text-emerald-700 font-semibold">Enabled under Sales menu</span>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-extrabold shrink-0">
+                ACTIVE
+              </span>
+              <input type="checkbox" id="toggle-enable-delivery-note" checked class="hidden" />
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
+              <div>
+                <span class="font-extrabold text-navy-900 block">Receipt Note</span>
+                <span class="text-[11px] text-emerald-700 font-semibold">Enabled under Purchase menu</span>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-extrabold shrink-0">
+                ACTIVE
+              </span>
+              <input type="checkbox" id="toggle-enable-receipt-note" checked class="hidden" />
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3 md:col-span-2">
+              <div>
+                <span class="font-extrabold text-navy-900 block">Show Time and Date on Bill</span>
+                <span class="text-[11px] text-slate-500">Print exact timestamp when previewing or printing invoices in Daybook</span>
+              </div>
+              <label class="inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" id="print-datetime-toggle" class="sr-only peer" />
+                <div class="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:bg-emerald-600 relative transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Voucher Numbering for All Vouchers -->
+        <div class="card-surface rounded-2xl p-6 space-y-5">
+          <div>
+            <h3 class="text-base font-extrabold text-navy-900">Custom Prefix &amp; Suffix Numbering (All Vouchers)</h3>
+            <p class="text-xs text-slate-500">Check custom numbering for any voucher type to reveal and configure its Prefix and Suffix</p>
+          </div>
+
+          <div id="all-vouchers-numbering-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-xs"></div>
+
+          <div class="pt-2 flex justify-end">
+            <button type="button" id="btn-save-general-settings" class="px-6 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-md transition-colors">
+              Save General Settings
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Change Financial Year Modal -->
+  <div id="change-fy-modal" class="hidden fixed inset-0 z-50 bg-navy-950/65 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="navy-surface text-white px-6 py-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-extrabold">Change Financial Year</h3>
+          <p class="text-xs text-blue-200 mt-0.5">Select custom accounting dates &amp; year (auto-locks in Profile)</p>
+        </div>
+        <button type="button" onclick="closeChangeFyModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="change-fy-form" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="modal-fy-from-date" class="block text-xs font-bold text-slate-700 mb-1.5">From Date <span class="text-red-500">*</span></label>
+            <input type="date" id="modal-fy-from-date" required class="form-input w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold font-mono text-navy-900" />
+          </div>
+          <div>
+            <label for="modal-fy-to-date" class="block text-xs font-bold text-slate-700 mb-1.5">To Date <span class="text-red-500">*</span></label>
+            <input type="date" id="modal-fy-to-date" required class="form-input w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold font-mono text-navy-900" />
+          </div>
+        </div>
+        <div>
+          <label for="modal-fy-label" class="block text-xs font-bold text-slate-700 mb-1.5">Financial Year Label <span class="text-red-500">*</span></label>
+          <input type="text" id="modal-fy-label" required class="form-input w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold font-mono text-navy-900" />
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button type="button" onclick="closeChangeFyModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="btn-save-fy-change" class="px-5 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-sm">Save &amp; Lock Financial Year</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shut Company Confirmation Modal -->
+  <div id="shut-company-modal" class="hidden fixed inset-0 z-50 bg-navy-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-base font-extrabold text-navy-900">Shut Active Company?</h3>
+      <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+        This will close the current company session inside your <span class="font-mono font-bold text-navy-900">.VPRS</span> file and return you to the Database Launcher.
+      </p>
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button type="button" id="btn-cancel-shut" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+        <button type="button" id="btn-confirm-shut" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm">Shut Company</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SESSION_DB_NAME = 'AR_VPRS_ACTIVE_HANDOFF_DB';
+    const SESSION_DB_VERSION = 1;
+    const STORE_ACTIVE_HANDLE = 'active_file_handle';
+    const VPRS_MAGIC_HEADER = 'VPRS_AR_BILLING_CONTAINER_V1';
+
+    const ALL_VOUCHER_TYPES = [
+      { key: 'SALES_INVOICE', label: 'Sales Invoice', defaultPrefix: 'INV/', defaultSuffix: '' },
+      { key: 'PURCHASE_BILL', label: 'Purchase Bill', defaultPrefix: 'PUR/', defaultSuffix: '' },
+      { key: 'SALE_ORDER', label: 'Sale Order', defaultPrefix: 'SO/', defaultSuffix: '' },
+      { key: 'PURCHASE_ORDER', label: 'Purchase Order', defaultPrefix: 'PO/', defaultSuffix: '' },
+      { key: 'DELIVERY_NOTE', label: 'Delivery Note', defaultPrefix: 'DN/', defaultSuffix: '' },
+      { key: 'RECEIPT_NOTE', label: 'Receipt Note', defaultPrefix: 'RN/', defaultSuffix: '' },
+      { key: 'CREDIT_NOTE', label: 'Credit Note', defaultPrefix: 'CN/', defaultSuffix: '' },
+      { key: 'DEBIT_NOTE', label: 'Debit Note', defaultPrefix: 'DN-DR/', defaultSuffix: '' },
+      { key: 'RECEIPT', label: 'Receipt', defaultPrefix: 'RCP/', defaultSuffix: '' },
+      { key: 'PAYMENT', label: 'Payment', defaultPrefix: 'PAY/', defaultSuffix: '' },
+      { key: 'CONTRA', label: 'Contra', defaultPrefix: 'CNT/', defaultSuffix: '' },
+      { key: 'JOURNAL', label: 'Journal', defaultPrefix: 'JRN/', defaultSuffix: '' }
+    ];
+
+    let activeHandle = null;
+    let activeArchive = null;
+    let cachedHandoffDB = null;
+    let isSavingGeneral = false;
+    let toastAutoHideTimer = null;
+
+    function enforceZeroBrowserDataStorage() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_) {}
+    }
+
+    function dismissFeedbackToast() {
+      if (toastAutoHideTimer) {
+        clearTimeout(toastAutoHideTimer);
+        toastAutoHideTimer = null;
+      }
+      document.getElementById('settings-feedback-banner').classList.add('hidden');
+    }
+
+    function showFeedback(type, title, message) {
+      if (toastAutoHideTimer) {
+        clearTimeout(toastAutoHideTimer);
+        toastAutoHideTimer = null;
+      }
+      const banner = document.getElementById('settings-feedback-banner');
+      const iconBox = document.getElementById('feedback-icon');
+      const titleEl = document.getElementById('feedback-title');
+      const msgEl = document.getElementById('feedback-message');
+
+      banner.classList.remove(
+        'hidden',
+        'bg-emerald-50', 'border-emerald-200', 'text-emerald-950',
+        'bg-red-50', 'border-red-200', 'text-red-950'
+      );
+
+      if (type === 'success') {
+        banner.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-950');
+        iconBox.className = 'w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5';
+        iconBox.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+      } else {
+        banner.classList.add('bg-red-50', 'border-red-200', 'text-red-950');
+        iconBox.className = 'w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 mt-0.5';
+        iconBox.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      }
+
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+
+      toastAutoHideTimer = setTimeout(() => {
+        dismissFeedbackToast();
+      }, 2000);
+    }
+
+    function openSessionHandoffDB() {
+      if (cachedHandoffDB) return Promise.resolve(cachedHandoffDB);
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(SESSION_DB_NAME, SESSION_DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_ACTIVE_HANDLE)) {
+            db.createObjectStore(STORE_ACTIVE_HANDLE, { keyPath: 'key' });
+          }
+        };
+        request.onsuccess = () => {
+          cachedHandoffDB = request.result;
+          resolve(cachedHandoffDB);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function fetchActiveHandoffHandle() {
+      const db = await openSessionHandoffDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_ACTIVE_HANDLE, 'readonly');
+        const req = tx.objectStore(STORE_ACTIVE_HANDLE).get('current_vprs');
+        tx.oncomplete = () => resolve(req.result || null);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function readActiveCompanyArchive(handle, requireWrite = false) {
+      if (requireWrite) {
+        let perm = await handle.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') perm = await handle.requestPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') {
+          const err = new Error('Write permission required for your .VPRS database.');
+          err.code = 'PERMISSION_NEEDED';
+          throw err;
+        }
+      }
+
+      let file;
+      try {
+        file = await handle.getFile();
+      } catch (_) {
+        const err = new Error('Permission required to read your .VPRS database.');
+        err.code = 'PERMISSION_NEEDED';
+        throw err;
+      }
+
+      const parsed = JSON.parse(await file.text());
+      if (!parsed || parsed.format !== VPRS_MAGIC_HEADER) {
+        throw new Error('Invalid .VPRS database signature.');
+      }
+
+      if (Array.isArray(parsed.companies) && parsed.companies.length > 0) {
+        const selected = parsed.companies.find(c => c.companyId === parsed.activeCompanyId) || parsed.companies[0];
+        parsed.activeCompanyId = selected.companyId;
+        parsed.isInitialized = true;
+        parsed.companyProfile = selected.companyProfile;
+        parsed.assets = selected.assets;
+        parsed.tables = selected.tables;
+      }
+
+      if (!parsed.companyProfile || !parsed.companyProfile.companyName) {
+        throw new Error('No active company found inside the selected .VPRS archive.');
+      }
+
+      return parsed;
+    }
+
+    async function persistArchiveToDisk() {
+      if (!activeHandle || !activeArchive) return;
+      let perm = await activeHandle.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') perm = await activeHandle.requestPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') throw new Error('Write permission required to save settings.');
+
+      const now = new Date().toISOString();
+      activeArchive.updatedAt = now;
+
+      if (Array.isArray(activeArchive.companies)) {
+        const targetId = activeArchive.activeCompanyId || (activeArchive.companyProfile && activeArchive.companyProfile.companyId);
+        const idx = activeArchive.companies.findIndex(c => c.companyId === targetId);
+        if (idx !== -1) {
+          activeArchive.companies[idx].companyProfile = activeArchive.companyProfile;
+          activeArchive.companies[idx].tables = activeArchive.tables;
+          activeArchive.companies[idx].updatedAt = now;
+        }
+      }
+
+      const writable = await activeHandle.createWritable();
+      await writable.write(JSON.stringify(activeArchive));
+      await writable.close();
+    }
+
+    function buildDefaultVoucherNumberingMap() {
+      const map = {};
+      ALL_VOUCHER_TYPES.forEach((vt) => {
+        map[vt.key] = {
+          enabled: false,
+          prefix: vt.defaultPrefix,
+          suffix: vt.defaultSuffix
+        };
+      });
+      return map;
+    }
+
+    function ensureGeneralSettings() {
+      if (!activeArchive.tables) activeArchive.tables = {};
+      if (!activeArchive.tables.settings || typeof activeArchive.tables.settings !== 'object') {
+        activeArchive.tables.settings = {};
+      }
+      if (!activeArchive.tables.settings.general || typeof activeArchive.tables.settings.general !== 'object') {
+        activeArchive.tables.settings.general = {
+          enableDeliveryNote: true,
+          enableReceiptNote: true,
+          printDateTimeOnInvoices: false,
+          customInvoiceNumberingEnabled: false,
+          voucherNumbering: buildDefaultVoucherNumberingMap()
+        };
+      }
+      if (!activeArchive.tables.settings.general.voucherNumbering || typeof activeArchive.tables.settings.general.voucherNumbering !== 'object') {
+        activeArchive.tables.settings.general.voucherNumbering = buildDefaultVoucherNumberingMap();
+      }
+      return activeArchive.tables.settings.general;
+    }
+
+    function renderAllVoucherNumberingGrid(savedMap = {}) {
+      const gridEl = document.getElementById('all-vouchers-numbering-grid');
+      if (!gridEl) return;
+
+      gridEl.innerHTML = ALL_VOUCHER_TYPES.map((vt) => {
+        const cfg = savedMap[vt.key] || {};
+        const isChecked = Boolean(cfg.enabled);
+        const prefixVal = cfg.prefix !== undefined ? cfg.prefix : vt.defaultPrefix;
+        const suffixVal = cfg.suffix !== undefined ? cfg.suffix : vt.defaultSuffix;
+
+        return `
+          <div data-voucher-key="${escapeHtml(vt.key)}" class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+            <label class="inline-flex items-center justify-between gap-2 cursor-pointer select-none">
+              <span class="font-extrabold text-navy-900">${escapeHtml(vt.label)}</span>
+              <span class="inline-flex items-center gap-2">
+                <span class="text-[10px] font-mono font-bold text-slate-500">Custom No.</span>
+                <input
+                  type="checkbox"
+                  class="voucher-custom-check w-4 h-4 rounded border-slate-300 text-navy-900 focus:ring-navy-900 cursor-pointer"
+                  ${isChecked ? 'checked' : ''}
+                />
+              </span>
+            </label>
+
+            <div class="voucher-prefix-suffix-box ${isChecked ? 'grid' : 'hidden'} grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-200/70">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 mb-1">Prefix</label>
+                <input
+                  type="text"
+                  value="${escapeHtml(prefixVal)}"
+                  placeholder="${escapeHtml(vt.defaultPrefix)}"
+                  class="form-input voucher-prefix-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold font-mono"
+                />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 mb-1">Suffix</label>
+                <input
+                  type="text"
+                  value="${escapeHtml(suffixVal)}"
+                  placeholder="Optional"
+                  class="form-input voucher-suffix-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold font-mono"
+                />
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      gridEl.querySelectorAll('[data-voucher-key]').forEach((card) => {
+        const chk = card.querySelector('.voucher-custom-check');
+        const box = card.querySelector('.voucher-prefix-suffix-box');
+        if (chk && box) {
+          chk.addEventListener('change', () => {
+            box.classList.toggle('hidden', !chk.checked);
+            box.classList.toggle('grid', chk.checked);
+          });
+        }
+      });
+    }
+
+    function collectVoucherNumberingFromGrid() {
+      const map = {};
+      document.querySelectorAll('#all-vouchers-numbering-grid [data-voucher-key]').forEach((card) => {
+        const key = card.getAttribute('data-voucher-key');
+        const enabled = Boolean(card.querySelector('.voucher-custom-check')?.checked);
+        const prefix = String(card.querySelector('.voucher-prefix-input')?.value || '').trim();
+        const suffix = String(card.querySelector('.voucher-suffix-input')?.value || '').trim();
+        map[key] = { enabled, prefix, suffix };
+      });
+      return map;
+    }
+
+    function populateGeneralSettingsUI() {
+      const gen = ensureGeneralSettings();
+      document.getElementById('toggle-enable-delivery-note').checked = gen.enableDeliveryNote !== false;
+      document.getElementById('toggle-enable-receipt-note').checked = gen.enableReceiptNote !== false;
+      document.getElementById('print-datetime-toggle').checked = Boolean(gen.printDateTimeOnInvoices);
+      renderAllVoucherNumberingGrid(gen.voucherNumbering || {});
+    }
+
+    async function saveGeneralSettingsState(showToast = true) {
+      if (isSavingGeneral || !activeHandle || !activeArchive) return;
+      isSavingGeneral = true;
+
+      const mainStage = document.getElementById('settings-main-stage');
+      const prevScrollTop = mainStage ? mainStage.scrollTop : 0;
+
+      try {
+        const gen = ensureGeneralSettings();
+        const numberingMap = collectVoucherNumberingFromGrid();
+        gen.enableDeliveryNote = true;
+        gen.enableReceiptNote = true;
+        gen.printDateTimeOnInvoices = document.getElementById('print-datetime-toggle').checked;
+        gen.voucherNumbering = numberingMap;
+        gen.customInvoiceNumberingEnabled = Boolean(numberingMap.SALES_INVOICE && numberingMap.SALES_INVOICE.enabled);
+
+        await persistArchiveToDisk();
+        if (showToast) {
+          showFeedback('success', 'General Settings Saved', `Preferences saved to ${activeHandle.name}.`);
+        }
+      } catch (err) {
+        showFeedback('error', 'Save Failed', err.message || 'Unable to save general settings.');
+      } finally {
+        isSavingGeneral = false;
+        requestAnimationFrame(() => {
+          if (mainStage) mainStage.scrollTop = prevScrollTop;
+        });
+      }
+    }
+
+    function bindPrintDateTimeToggle() {
+      const toggleEl = document.getElementById('print-datetime-toggle');
+      if (!toggleEl) return;
+
+      toggleEl.addEventListener('change', async (e) => {
+        const mainStage = document.getElementById('settings-main-stage');
+        const prevScrollTop = mainStage ? mainStage.scrollTop : 0;
+
+        try {
+          e.target.blur();
+        } catch (_) {}
+
+        await saveGeneralSettingsState(true);
+
+        requestAnimationFrame(() => {
+          if (mainStage) mainStage.scrollTop = prevScrollTop;
+        });
+      });
+    }
+
+    document.getElementById('btn-save-general-settings').addEventListener('click', () => {
+      saveGeneralSettingsState(true);
+    });
+
+    function renderHeaderBranding(archive, fileName) {
+      const profile = archive.companyProfile || {};
+      const logoSrc = (archive.assets && (archive.assets.logo || (archive.assets.images && archive.assets.images.company_logo && archive.assets.images.company_logo.dataUrl))) || null;
+      const logoBox = document.getElementById('header-company-logo');
+
+      if (logoSrc) {
+        logoBox.innerHTML = `<img src="${logoSrc}" alt="${escapeHtml(profile.companyName)}" class="w-full h-full object-contain p-1 bg-white" />`;
+      } else {
+        const initials = (profile.companyName || 'AR').substring(0, 2).toUpperCase();
+        logoBox.innerHTML = `<span id="header-company-initials">${escapeHtml(initials)}</span>`;
+      }
+
+      const fyText = profile.financialYear || '2026-2027';
+      document.getElementById('header-company-name').textContent = profile.companyName || 'Company Workspace';
+      document.getElementById('header-fy-tag').textContent = `FY ${fyText}`;
+      const sidebarFyEl = document.getElementById('sidebar-fy-pill');
+      if (sidebarFyEl) sidebarFyEl.textContent = fyText;
+      document.getElementById('header-vprs-file').textContent = fileName || '';
+
+      if (archive.activeSession && archive.activeSession.fullName) {
+        document.getElementById('header-active-user').textContent = archive.activeSession.fullName;
+      }
+    }
+
+    // Sidebar Collapse Toggle
+    const settingsSidebarEl = document.getElementById('settings-sidebar');
+    document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+      settingsSidebarEl.classList.toggle('is-collapsed');
+    });
+
+    // Change Financial Year Modal Logic
+    function closeChangeFyModal() {
+      document.getElementById('change-fy-modal').classList.add('hidden');
+    }
+
+    document.getElementById('btn-sidebar-change-fy').addEventListener('click', () => {
+      if (!activeArchive) return;
+      const profile = activeArchive.companyProfile || {};
+      document.getElementById('modal-fy-from-date').value = profile.financialYearFrom || '2026-04-01';
+      document.getElementById('modal-fy-to-date').value = profile.financialYearTo || '2027-03-31';
+      document.getElementById('modal-fy-label').value = profile.financialYear || '2026-2027';
+      document.getElementById('change-fy-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('change-fy-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeHandle || !activeArchive) return;
+      const fromDate = document.getElementById('modal-fy-from-date').value.trim();
+      const toDate = document.getElementById('modal-fy-to-date').value.trim();
+      const selectedFy = document.getElementById('modal-fy-label').value.trim();
+      if (!fromDate || !toDate || !selectedFy) return;
+
+      activeArchive.companyProfile.financialYear = selectedFy;
+      activeArchive.companyProfile.financialYearFrom = fromDate;
+      activeArchive.companyProfile.financialYearTo = toDate;
+      activeArchive.companyProfile.financialYearLocked = true;
+
+      await persistArchiveToDisk();
+      renderHeaderBranding(activeArchive, activeHandle.name);
+      closeChangeFyModal();
+      showFeedback('success', 'Financial Year Updated', `FY ${selectedFy} saved and locked.`);
+    });
+
+    // Switch Company & Shut Company Actions
+    document.getElementById('btn-switch-company').addEventListener('click', () => {
+      window.location.replace('company.html');
+    });
+
+    const shutModal = document.getElementById('shut-company-modal');
+    document.getElementById('btn-shut-company').addEventListener('click', () => {
+      shutModal.classList.remove('hidden');
+    });
+    document.getElementById('btn-cancel-shut').addEventListener('click', () => {
+      shutModal.classList.add('hidden');
+    });
+    document.getElementById('btn-confirm-shut').addEventListener('click', async () => {
+      try {
+        if (activeHandle && activeArchive) {
+          activeArchive.activeSession = null;
+          activeArchive.updatedAt = new Date().toISOString();
+          const writable = await activeHandle.createWritable();
+          await writable.write(JSON.stringify(activeArchive));
+          await writable.close();
+        }
+        const db = await openSessionHandoffDB();
+        await new Promise((resolve) => {
+          const tx = db.transaction(STORE_ACTIVE_HANDLE, 'readwrite');
+          tx.objectStore(STORE_ACTIVE_HANDLE).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+      } catch (_) {}
+      enforceZeroBrowserDataStorage();
+      window.location.replace('index.html');
+    });
+
+    document.getElementById('btn-regrant-vprs').addEventListener('click', async () => {
+      if (!activeHandle) return;
+      try {
+        activeArchive = await readActiveCompanyArchive(activeHandle, true);
+        document.getElementById('session-warning-box').classList.add('hidden');
+        renderHeaderBranding(activeArchive, activeHandle.name);
+        populateGeneralSettingsUI();
+      } catch (err) {
+        document.getElementById('session-warning-desc').textContent = err.message;
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function initGeneralSettingsPage() {
+      enforceZeroBrowserDataStorage();
+      renderAllVoucherNumberingGrid(buildDefaultVoucherNumberingMap());
+      bindPrintDateTimeToggle();
+      const warningBox = document.getElementById('session-warning-box');
+
+      try {
+        const handoff = await fetchActiveHandoffHandle();
+        if (!handoff || !handoff.handle) {
+          warningBox.classList.remove('hidden');
+          document.getElementById('session-warning-title').textContent = 'No Active .VPRS Company Session';
+          document.getElementById('session-warning-desc').textContent = 'Please select or create your .VPRS database file from the launcher.';
+          document.getElementById('btn-regrant-vprs').classList.add('hidden');
+          return;
+        }
+
+        activeHandle = handoff.handle;
+        try {
+          activeArchive = await readActiveCompanyArchive(activeHandle, false);
+          renderHeaderBranding(activeArchive, activeHandle.name);
+          populateGeneralSettingsUI();
+        } catch (err) {
+          warningBox.classList.remove('hidden');
+          document.getElementById('session-warning-title').textContent = 'Unlock Company Database';
+          document.getElementById('session-warning-desc').textContent = err.message;
+        }
+      } catch (err) {
+        warningBox.classList.remove('hidden');
+        document.getElementById('session-warning-desc').textContent = err.message;
+      }
+    }
+
+    initGeneralSettingsPage();
+  </script>
+</body>
+</html>

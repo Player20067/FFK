@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Offline Billing Software — Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#030712',
+              900: '#071126',
+              800: '#0d1d3d',
+              700: '#152b59',
+              600: '#1e3c78',
+            },
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Dark Navy Blue & Crisp White Desktop Aesthetic */
+    body {
+      background-color: #f3f6fa;
+      background-image:
+        radial-gradient(circle at 12% 14%, rgba(13, 29, 61, 0.06) 0%, transparent 42%),
+        radial-gradient(circle at 88% 86%, rgba(37, 99, 235, 0.06) 0%, transparent 42%);
+      user-select: none;
+    }
+
+    .navy-surface {
+      background: linear-gradient(155deg, #040a18 0%, #071126 52%, #0e2047 100%);
+    }
+
+    .architectural-grid {
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .auth-shell {
+      background: #ffffff;
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      box-shadow:
+        0 32px 72px -18px rgba(7, 17, 38, 0.20),
+        0 12px 28px -10px rgba(7, 17, 38, 0.07),
+        0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    }
+
+    .field-shell {
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    }
+
+    .field-shell:focus-within {
+      background-color: #ffffff;
+      border-color: #0d1d3d;
+      box-shadow: 0 0 0 4px rgba(13, 29, 61, 0.08);
+    }
+
+    .field-shell.is-valid {
+      border-color: #10b981;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.10);
+    }
+
+    .field-shell.is-invalid {
+      border-color: #ef4444;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.65); opacity: 0; }
+      70% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .status-pop {
+      animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .btn-primary-active {
+      background: linear-gradient(135deg, #071126 0%, #0f234d 100%);
+      box-shadow: 0 14px 28px -8px rgba(7, 17, 38, 0.35), 0 4px 10px -2px rgba(7, 17, 38, 0.15);
+    }
+
+    .btn-primary-active:hover {
+      background: linear-gradient(135deg, #0b1936 0%, #163169 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 34px -8px rgba(7, 17, 38, 0.42), 0 6px 14px -2px rgba(7, 17, 38, 0.18);
+    }
+
+    .btn-primary-active:active {
+      transform: translateY(0px);
+    }
+  </style>
+</head>
+<body class="text-slate-900 min-h-screen flex flex-col justify-between antialiased selection:bg-navy-900 selection:text-white">
+
+  <!-- Minimalist Floating Top Bar -->
+  <header class="w-full max-w-5xl mx-auto px-6 pt-6 pb-2 flex items-center justify-between">
+    <a href="company.html" class="inline-flex items-center gap-3 group">
+      <div class="w-10 h-10 rounded-xl navy-surface text-white flex items-center justify-center shadow-md shadow-navy-900/15 group-hover:scale-105 transition-transform">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      <div>
+        <span class="block font-extrabold text-sm tracking-tight text-navy-900">AR Offline Billing</span>
+        <span class="block text-[11px] font-medium text-slate-500">Enterprise Desktop Suite</span>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-2.5">
+      <div id="header-file-pill" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/90 shadow-xs text-xs font-mono font-semibold text-navy-900">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="header-file-name"></span>
+      </div>
+
+      <a href="company.html" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-navy-900 text-navy-900 hover:text-white border border-slate-200/90 hover:border-navy-900 text-xs font-bold shadow-xs transition-all">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span>Companies</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Centered Split Authentication Stage -->
+  <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-center">
+
+    <!-- Loading Card -->
+    <div id="login-loading" class="auth-shell rounded-3xl p-14 text-center w-full max-w-md">
+      <div class="w-10 h-10 border-[2.5px] border-navy-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-sm font-extrabold text-navy-900">Opening Company Vault</p>
+      <p class="text-xs text-slate-500 mt-1">Reading local .VPRS archive...</p>
+    </div>
+
+    <!-- Error / Missing Session Card -->
+    <div id="login-error-card" class="hidden auth-shell rounded-3xl p-10 text-center w-full max-w-md">
+      <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center mx-auto mb-5">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h2 id="error-card-title" class="text-lg font-extrabold text-navy-900 mb-2">Session Required</h2>
+      <p id="error-card-msg" class="text-xs text-slate-500 leading-relaxed mb-7">
+        Select an initialized company archive to sign in.
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <a href="index.html" class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+          Launcher
+        </a>
+        <a href="company.html" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-sm transition-colors">
+          Company Manager
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Split Login Container -->
+    <div id="login-card-container" class="hidden auth-shell rounded-[28px] overflow-hidden w-full grid grid-cols-1 lg:grid-cols-12">
+
+      <!-- Left Column: Deep Navy Company Showcase -->
+      <div class="lg:col-span-5 navy-surface text-white p-9 sm:p-11 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute inset-0 architectural-grid pointer-events-none"></div>
+        <div class="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-indigo-400/10 blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10">
+          <!-- Company Logo Container -->
+          <div id="company-logo-box" class="w-24 h-24 rounded-2xl bg-white text-navy-900 flex items-center justify-center shadow-2xl shadow-black/30 overflow-hidden mb-7 ring-4 ring-white/10">
+            <span id="company-initials" class="text-3xl font-black tracking-tight text-navy-900">AR</span>
+          </div>
+
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/10 border border-white/10 text-[10px] font-mono font-bold uppercase tracking-widest text-blue-200 mb-3">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>Active Entity</span>
+          </div>
+
+          <h1 id="company-display-name" class="text-2xl sm:text-[26px] font-extrabold text-white leading-snug tracking-tight">
+            Company Name
+          </h1>
+
+          <div class="mt-4 space-y-1.5">
+            <p id="company-gstin-line" class="font-mono text-xs font-semibold text-blue-200"></p>
+            <p id="company-location-line" class="text-xs text-slate-300/80"></p>
+          </div>
+        </div>
+
+        <!-- Bottom Archive Metadata -->
+        <div class="relative z-10 mt-12 pt-6 border-t border-white/10 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400 font-medium">Financial Year</span>
+            <span id="company-fy-badge" class="font-mono font-bold text-white bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">2026-2027</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400 font-medium">Database</span>
+            <span id="company-file-badge" class="font-mono font-semibold text-blue-200 truncate max-w-[170px]">Company.VPRS</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Crisp White Sign-In Form -->
+      <div class="lg:col-span-7 bg-white p-9 sm:p-12 lg:p-14 flex flex-col justify-center">
+        <div class="max-w-md w-full mx-auto">
+          <div class="mb-8">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-navy-900 tracking-tight">Sign In</h2>
+            <p class="text-xs text-slate-500 mt-1.5">Enter your credentials to unlock workspace</p>
+          </div>
+
+          <!-- Permission Unlock Notice -->
+          <div id="permission-unlock-box" class="hidden mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+            <p class="font-bold">File Access Confirmation</p>
+            <p class="text-[11px] text-amber-800 mt-0.5 mb-3">Grant read/write permission to your .VPRS file to proceed.</p>
+            <button type="button" id="btn-unlock-vprs" class="px-4 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow-xs">
+              Unlock .VPRS File
+            </button>
+          </div>
+
+          <form id="login-form" class="space-y-6" autocomplete="off">
+
+            <!-- Clean Identifier Input -->
+            <div>
+              <label for="input-identifier" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Username / Mobile / Email
+              </label>
+              <div class="field-shell relative rounded-2xl border border-slate-200 bg-slate-50/60">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="input-identifier"
+                  required
+                  spellcheck="false"
+                  class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-transparent text-sm font-semibold text-navy-900 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Clean Password Input with Live Green Tick / Red Cross -->
+            <div>
+              <label for="input-password" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Password
+              </label>
+
+              <div id="password-field-shell" class="field-shell relative rounded-2xl border border-slate-200 bg-slate-50/60">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+
+                <input
+                  type="password"
+                  id="input-password"
+                  required
+                  class="w-full pl-11 pr-20 py-3.5 rounded-2xl bg-transparent text-sm font-semibold text-navy-900 focus:outline-none"
+                />
+
+                <!-- Live Match Badge (Green Tick or Red Cross) + Eye Toggle -->
+                <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1.5">
+                  <span id="password-match-icon" class="flex items-center justify-center w-6 h-6"></span>
+
+                  <button
+                    type="button"
+                    id="btn-toggle-password"
+                    tabindex="-1"
+                    class="p-1.5 rounded-xl text-slate-400 hover:text-navy-900 hover:bg-slate-200/60 focus:outline-none transition-colors"
+                  >
+                    <svg id="eye-icon-open" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <svg id="eye-icon-closed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button (Unlocked only when password matches) -->
+            <div class="pt-3">
+              <button
+                type="submit"
+                id="btn-login-submit"
+                disabled
+                class="w-full py-4 px-6 rounded-2xl bg-slate-100 text-slate-400 border border-slate-200/80 font-extrabold text-sm tracking-wide flex items-center justify-center gap-2.5 cursor-not-allowed transition-all"
+              >
+                <svg id="login-btn-lock-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span id="login-btn-label">Login</span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Clean Minimal Footer -->
+  <footer class="w-full max-w-5xl mx-auto px-6 py-4 flex items-center justify-between text-[11px] text-slate-400">
+    <span>AR Offline Billing Software</span>
+    <span class="font-mono text-slate-500">Offline .VPRS Security</span>
+  </footer>
+
+  <!-- Authentication & Real-Time Password Verification Script (Zero Browser Data Storage) -->
+  <script>
+    const SESSION_DB_NAME = 'AR_VPRS_ACTIVE_HANDOFF_DB';
+    const SESSION_DB_VERSION = 1;
+    const STORE_ACTIVE_HANDLE = 'active_file_handle';
+    const VPRS_MAGIC_HEADER = 'VPRS_AR_BILLING_CONTAINER_V1';
+
+    let activeHandoff = null;
+    let activeArchive = null;
+    let matchedUserRecord = null;
+    let isPasswordVerified = false;
+    let cachedHandoffDB = null;
+
+    const inputIdentifier = document.getElementById('input-identifier');
+    const inputPassword = document.getElementById('input-password');
+    const passwordFieldShell = document.getElementById('password-field-shell');
+    const passwordMatchIcon = document.getElementById('password-match-icon');
+    const btnLoginSubmit = document.getElementById('btn-login-submit');
+    const loginBtnLabel = document.getElementById('login-btn-label');
+    const loginBtnLockIcon = document.getElementById('login-btn-lock-icon');
+
+    // Enforce zero browser storage for business/session data
+    function enforceZeroBrowserDataStorage() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_) {}
+    }
+
+    function openSessionHandoffDB() {
+      if (cachedHandoffDB) return Promise.resolve(cachedHandoffDB);
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(SESSION_DB_NAME, SESSION_DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_ACTIVE_HANDLE)) {
+            db.createObjectStore(STORE_ACTIVE_HANDLE, { keyPath: 'key' });
+          }
+        };
+        request.onsuccess = () => {
+          cachedHandoffDB = request.result;
+          resolve(cachedHandoffDB);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function fetchActiveHandoffHandle() {
+      const db = await openSessionHandoffDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_ACTIVE_HANDLE, 'readonly');
+        const req = tx.objectStore(STORE_ACTIVE_HANDLE).get('current_vprs');
+        tx.oncomplete = () => resolve(req.result || null);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function readArchiveFromHandle(handle, requireWrite = false) {
+      if (requireWrite) {
+        let perm = await handle.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') {
+          perm = await handle.requestPermission({ mode: 'readwrite' });
+        }
+        if (perm !== 'granted') {
+          const err = new Error('Write permission required for the .VPRS file.');
+          err.code = 'PERMISSION_NEEDED';
+          throw err;
+        }
+      }
+
+      let file;
+      try {
+        file = await handle.getFile();
+      } catch (_) {
+        const err = new Error('Permission required to read the .VPRS file.');
+        err.code = 'PERMISSION_NEEDED';
+        throw err;
+      }
+
+      const rawText = await file.text();
+      const parsed = JSON.parse(rawText);
+
+      if (!parsed || parsed.format !== VPRS_MAGIC_HEADER) {
+        throw new Error('Selected file is not a valid .VPRS archive.');
+      }
+
+      // Resolve active company partition directly from the .VPRS file on disk (even when shared across PCs)
+      if (Array.isArray(parsed.companies) && parsed.companies.length > 0) {
+        const selectedCompany = parsed.companies.find(c => c.companyId === parsed.activeCompanyId) || parsed.companies[0];
+        parsed.activeCompanyId = selectedCompany.companyId;
+        parsed.isInitialized = true;
+        parsed.companyProfile = selectedCompany.companyProfile;
+        parsed.assets = selectedCompany.assets;
+        parsed.tables = selectedCompany.tables;
+      }
+
+      if (!parsed.companyProfile || !parsed.companyProfile.companyName) {
+        throw new Error('Selected .VPRS archive does not contain an initialized company profile.');
+      }
+      return parsed;
+    }
+
+    function normalizePhone(val) {
+      return String(val || '').replace(/[\s\-()+]/g, '');
+    }
+
+    function findRegisteredUser(identifierRaw) {
+      if (!activeArchive || !activeArchive.tables || !Array.isArray(activeArchive.tables.users)) {
+        return null;
+      }
+      const query = String(identifierRaw || '').trim();
+      if (!query) return null;
+
+      const queryLower = query.toLowerCase();
+      const queryPhone = normalizePhone(query);
+      const profile = activeArchive.companyProfile || {};
+
+      return activeArchive.tables.users.find((u) => {
+        if (u.active === false) return false;
+
+        const matchUsername = u.username && u.username.trim().toLowerCase() === queryLower;
+        const userEmail = u.email || (u.role === 'OWNER' ? profile.email : '');
+        const matchEmail = userEmail && userEmail.trim().toLowerCase() === queryLower;
+        const userPhone = u.phone || (u.role === 'OWNER' ? profile.phone : '');
+        const normUserPhone = normalizePhone(userPhone);
+        const matchPhone = queryPhone.length >= 6 && normUserPhone && (
+          normUserPhone === queryPhone ||
+          normUserPhone.endsWith(queryPhone) ||
+          queryPhone.endsWith(normUserPhone)
+        );
+
+        return matchUsername || matchEmail || matchPhone;
+      }) || null;
+    }
+
+    function verifyUserPassword(user, plainPassword) {
+      if (!user || !plainPassword) return false;
+      if (user.passwordHash) {
+        try {
+          if (atob(user.passwordHash) === plainPassword) return true;
+        } catch (_) {}
+        if (user.passwordHash === plainPassword) return true;
+      }
+      if (user.password && user.password === plainPassword) return true;
+      return false;
+    }
+
+    function setPasswordVisualState(state) {
+      passwordFieldShell.classList.remove('is-valid', 'is-invalid');
+
+      if (state === 'MATCH') {
+        passwordFieldShell.classList.add('is-valid');
+        passwordMatchIcon.innerHTML = `
+          <span class="status-pop w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+        `;
+      } else if (state === 'MISMATCH') {
+        passwordFieldShell.classList.add('is-invalid');
+        passwordMatchIcon.innerHTML = `
+          <span class="status-pop w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-xs">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </span>
+        `;
+      } else {
+        passwordMatchIcon.innerHTML = '';
+      }
+    }
+
+    function updateLoginButtonState(unlocked) {
+      isPasswordVerified = unlocked;
+      if (unlocked) {
+        btnLoginSubmit.disabled = false;
+        btnLoginSubmit.className = 'w-full py-4 px-6 rounded-2xl btn-primary-active text-white font-extrabold text-sm tracking-wide flex items-center justify-center gap-2.5 cursor-pointer transition-all';
+        loginBtnLockIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />`;
+        loginBtnLabel.textContent = 'Sign In';
+      } else {
+        btnLoginSubmit.disabled = true;
+        btnLoginSubmit.className = 'w-full py-4 px-6 rounded-2xl bg-slate-100 text-slate-400 border border-slate-200/80 font-extrabold text-sm tracking-wide flex items-center justify-center gap-2.5 cursor-not-allowed transition-all';
+        loginBtnLockIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />`;
+        loginBtnLabel.textContent = 'Login';
+      }
+    }
+
+    function evaluateCredentialsLive() {
+      const idVal = inputIdentifier.value.trim();
+      const passVal = inputPassword.value;
+
+      if (!activeArchive) {
+        matchedUserRecord = null;
+        setPasswordVisualState('NEUTRAL');
+        updateLoginButtonState(false);
+        return;
+      }
+
+      matchedUserRecord = findRegisteredUser(idVal);
+
+      if (!passVal) {
+        setPasswordVisualState('NEUTRAL');
+        updateLoginButtonState(false);
+        return;
+      }
+
+      if (matchedUserRecord && verifyUserPassword(matchedUserRecord, passVal)) {
+        setPasswordVisualState('MATCH');
+        updateLoginButtonState(true);
+      } else {
+        setPasswordVisualState('MISMATCH');
+        updateLoginButtonState(false);
+      }
+    }
+
+    function populateCompanyBranding(archive, fileName) {
+      const profile = archive.companyProfile;
+      const logoSrc = (archive.assets && (archive.assets.logo || (archive.assets.images && archive.assets.images.company_logo && archive.assets.images.company_logo.dataUrl))) || null;
+      const logoBox = document.getElementById('company-logo-box');
+
+      if (logoSrc) {
+        logoBox.innerHTML = `<img src="${logoSrc}" alt="${escapeHtml(profile.companyName)}" class="w-full h-full object-contain p-2 bg-white" />`;
+      } else {
+        const initials = (profile.companyName || 'CO').substring(0, 2).toUpperCase();
+        document.getElementById('company-initials').textContent = initials;
+      }
+
+      document.getElementById('company-display-name').textContent = profile.companyName;
+      document.getElementById('company-gstin-line').textContent = profile.gstin ? `GSTIN ${profile.gstin}` : 'Unregistered';
+      document.getElementById('company-location-line').textContent = [profile.city, profile.district, profile.state].filter(Boolean).join(', ');
+      document.getElementById('company-fy-badge').textContent = profile.financialYear || '2026-2027';
+      document.getElementById('company-file-badge').textContent = fileName;
+
+      document.getElementById('header-file-pill').classList.remove('hidden');
+      document.getElementById('header-file-name').textContent = fileName;
+    }
+
+    async function initLoginScreen() {
+      enforceZeroBrowserDataStorage();
+      const loadingEl = document.getElementById('login-loading');
+      const errorEl = document.getElementById('login-error-card');
+      const cardEl = document.getElementById('login-card-container');
+      const permBox = document.getElementById('permission-unlock-box');
+
+      try {
+        activeHandoff = await fetchActiveHandoffHandle();
+        if (!activeHandoff || !activeHandoff.handle) {
+          loadingEl.classList.add('hidden');
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        const diskFileName = activeHandoff.handle.name;
+
+        try {
+          activeArchive = await readArchiveFromHandle(activeHandoff.handle, false);
+          populateCompanyBranding(activeArchive, diskFileName);
+          loadingEl.classList.add('hidden');
+          cardEl.classList.remove('hidden');
+          inputIdentifier.focus();
+        } catch (err) {
+          if (err.code === 'PERMISSION_NEEDED') {
+            loadingEl.classList.add('hidden');
+            cardEl.classList.remove('hidden');
+            permBox.classList.remove('hidden');
+            document.getElementById('company-file-badge').textContent = diskFileName;
+          } else {
+            throw err;
+          }
+        }
+      } catch (err) {
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        document.getElementById('error-card-title').textContent = 'Unable to Load Archive';
+        document.getElementById('error-card-msg').textContent = err.message;
+      }
+    }
+
+    document.getElementById('btn-unlock-vprs').addEventListener('click', async () => {
+      if (!activeHandoff || !activeHandoff.handle) return;
+      try {
+        activeArchive = await readArchiveFromHandle(activeHandoff.handle, true);
+        document.getElementById('permission-unlock-box').classList.add('hidden');
+        populateCompanyBranding(activeArchive, activeHandoff.handle.name);
+        evaluateCredentialsLive();
+        inputIdentifier.focus();
+      } catch (err) {
+        document.getElementById('login-card-container').classList.add('hidden');
+        document.getElementById('login-error-card').classList.remove('hidden');
+        document.getElementById('error-card-title').textContent = 'Access Denied';
+        document.getElementById('error-card-msg').textContent = err.message;
+      }
+    });
+
+    document.getElementById('btn-toggle-password').addEventListener('click', () => {
+      const isHidden = inputPassword.type === 'password';
+      inputPassword.type = isHidden ? 'text' : 'password';
+      document.getElementById('eye-icon-open').classList.toggle('hidden', isHidden);
+      document.getElementById('eye-icon-closed').classList.toggle('hidden', !isHidden);
+      inputPassword.focus();
+    });
+
+    inputIdentifier.addEventListener('input', evaluateCredentialsLive);
+    inputPassword.addEventListener('input', evaluateCredentialsLive);
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isPasswordVerified || !matchedUserRecord || !activeHandoff || !activeArchive) {
+        return;
+      }
+
+      btnLoginSubmit.disabled = true;
+      loginBtnLabel.textContent = 'Signing In...';
+
+      try {
+        enforceZeroBrowserDataStorage();
+
+        // Commit authenticated session directly to the .VPRS file on disk without redundant re-read
+        const now = new Date().toISOString();
+        const activeCompId = activeArchive.activeCompanyId || activeArchive.companyProfile.companyId;
+
+        activeArchive.activeCompanyId = activeCompId;
+        activeArchive.updatedAt = now;
+        activeArchive.activeSession = {
+          companyId: activeCompId,
+          userId: matchedUserRecord.id,
+          username: matchedUserRecord.username,
+          fullName: matchedUserRecord.fullName || matchedUserRecord.username,
+          role: matchedUserRecord.role || 'OWNER',
+          authenticatedAt: now
+        };
+
+        // Write compact .VPRS database directly to disk in real time
+        const writable = await activeHandoff.handle.createWritable();
+        await writable.write(JSON.stringify(activeArchive));
+        await writable.close();
+
+        // Keep strictly the OS FileSystemFileHandle pointer—zero user/session data in browser storage
+        const db = await openSessionHandoffDB();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_ACTIVE_HANDLE, 'readwrite');
+          tx.objectStore(STORE_ACTIVE_HANDLE).put({
+            key: 'current_vprs',
+            handle: activeHandoff.handle
+          });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+
+        window.location.replace('main.html');
+      } catch (err) {
+        btnLoginSubmit.disabled = false;
+        loginBtnLabel.textContent = 'Login';
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    initLoginScreen();
+  </script>
+</body>
+</html>

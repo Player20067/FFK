@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Offline Billing Software — Database Launcher</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#04091a',
+              900: '#081229',
+              800: '#0f1f44',
+              700: '#162d63',
+            },
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Dark Navy Blue & Crisp White Desktop Theme */
+    body {
+      background-color: #f8fafc;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(15, 31, 68, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.04) 0px, transparent 50%);
+      user-select: none;
+    }
+
+    .navy-surface {
+      background: linear-gradient(135deg, #04091a 0%, #081229 55%, #0f1f44 100%);
+    }
+
+    .launcher-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow:
+        0 20px 45px -15px rgba(8, 18, 41, 0.08),
+        0 4px 12px -2px rgba(8, 18, 41, 0.03);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .launcher-card:hover {
+      border-color: #162d63;
+      box-shadow:
+        0 28px 55px -16px rgba(8, 18, 41, 0.16),
+        0 8px 20px -4px rgba(37, 99, 235, 0.10);
+      transform: translateY(-2px);
+    }
+
+    .btn-navy {
+      background: linear-gradient(135deg, #081229 0%, #162d63 100%);
+      transition: all 0.18s ease;
+    }
+
+    .btn-navy:hover {
+      background: linear-gradient(135deg, #0f1f44 0%, #1e3a8a 100%);
+      box-shadow: 0 10px 25px -5px rgba(8, 18, 41, 0.35);
+    }
+  </style>
+</head>
+<body class="text-slate-900 min-h-screen flex flex-col justify-between antialiased selection:bg-navy-900 selection:text-white">
+
+  <!-- Deep Navy Blue Top Header -->
+  <header class="w-full navy-surface text-white border-b border-navy-700/60 px-6 py-4 flex items-center justify-between shadow-lg">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-white text-navy-900 flex items-center justify-center shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="font-extrabold text-base tracking-wider uppercase text-white">AR Offline Billing</span>
+          <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-white/10 text-blue-200 border border-white/15">v1.0 Desktop</span>
+        </div>
+        <p class="text-xs text-blue-200/75">Direct Disk .VPRS Container Engine</p>
+      </div>
+    </div>
+
+    <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-blue-100/80 bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-full">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span>100% File-Based Storage</span>
+    </div>
+  </header>
+
+  <!-- Main Launcher Content -->
+  <main class="flex-1 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col justify-center">
+
+    <!-- Dark Navy Hero Banner -->
+    <div class="navy-surface rounded-3xl p-8 sm:p-10 mb-8 text-white shadow-xl border border-navy-700/70 relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-blue-500/10 blur-2xl pointer-events-none"></div>
+      <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-blue-200 text-xs font-semibold mb-4">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+          </svg>
+          <span>Database File Launcher</span>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
+          Create or Open Your .VPRS File
+        </h1>
+        <p class="text-blue-100/80 text-sm leading-relaxed">
+          All companies, logos, ledgers, invoices, and inventory are stored directly inside your portable <code class="font-mono text-white bg-white/15 px-1.5 py-0.5 rounded font-semibold">.VPRS</code> file on disk—never in browser storage.
+        </p>
+      </div>
+    </div>
+
+    <!-- Alert / Status Feedback Box -->
+    <div id="launcher-alert" class="hidden mb-6 rounded-2xl p-4 border bg-white text-sm flex items-start gap-3 shadow-md">
+      <div id="alert-icon" class="mt-0.5 shrink-0"></div>
+      <div class="flex-1">
+        <h4 id="alert-title" class="font-bold text-sm"></h4>
+        <p id="alert-message" class="text-xs opacity-90 mt-0.5 leading-relaxed"></p>
+      </div>
+      <button type="button" onclick="dismissAlert()" class="text-slate-400 hover:text-slate-700 p-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Primary Two-Button Action Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Action 1: Create File -->
+      <button id="btn-create-file" type="button" class="launcher-card group text-left rounded-3xl p-8 flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-navy-800">
+        <div>
+          <div class="w-14 h-14 rounded-2xl navy-surface text-white flex items-center justify-center mb-6 shadow-md group-hover:scale-105 transition-transform">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-extrabold text-navy-900 mb-2">
+            Create File
+          </h2>
+          <p class="text-xs text-slate-600 leading-relaxed mb-7">
+            Choose a folder and filename on disk to create an empty <span class="font-mono text-navy-900 font-bold">.VPRS</span> database file, then proceed immediately to Company Manager.
+          </p>
+        </div>
+
+        <div class="w-full py-3 px-4 rounded-xl btn-navy text-white text-xs font-bold tracking-wide flex items-center justify-between shadow-sm">
+          <span>New .VPRS Database File</span>
+          <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </div>
+      </button>
+
+      <!-- Action 2: Select Existing File -->
+      <button id="btn-select-file" type="button" class="launcher-card group text-left rounded-3xl p-8 flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-navy-800">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 text-navy-900 flex items-center justify-center mb-6 group-hover:bg-navy-900 group-hover:text-white group-hover:border-navy-900 group-hover:scale-105 transition-all">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-extrabold text-navy-900 mb-2">
+            Select Existing File
+          </h2>
+          <p class="text-xs text-slate-600 leading-relaxed mb-7">
+            Open any <span class="font-mono text-navy-900 font-bold">.VPRS</span> file from your computer or shared drive. All companies stored inside that file load directly without modifying existing data.
+          </p>
+        </div>
+
+        <div class="w-full py-3 px-4 rounded-xl bg-slate-100 group-hover:bg-navy-900 text-navy-900 group-hover:text-white border border-slate-200 group-hover:border-navy-900 text-xs font-bold tracking-wide flex items-center justify-between transition-colors">
+          <span>Browse .VPRS File</span>
+          <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </div>
+      </button>
+
+    </div>
+
+  </main>
+
+  <!-- Deep Navy Footer -->
+  <footer class="w-full navy-surface text-blue-200/70 border-t border-navy-700/60 px-6 py-3.5 text-xs flex flex-col sm:flex-row items-center justify-between gap-2">
+    <span class="font-medium text-white/90">AR Offline Billing Software &bull; Multi-Page Modular Desktop Architecture</span>
+    <span class="font-mono text-[11px] text-blue-300/80">Portable .VPRS File Database</span>
+  </footer>
+
+  <!-- Launcher Core Script (Zero Browser Data Storage, Direct File Handle Transfer Only) -->
+  <script>
+    const FILE_POINTER_DB = 'AR_VPRS_ACTIVE_HANDOFF_DB';
+    const FILE_POINTER_VERSION = 1;
+    const FILE_POINTER_STORE = 'active_file_handle';
+    const VPRS_MAGIC_HEADER = 'VPRS_AR_BILLING_CONTAINER_V1';
+
+    let pointerDbPromise = null;
+
+    // Purge any browser storage immediately on launcher load so zero data is ever persisted in the browser
+    function purgeBrowserStorage() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_) {}
+    }
+
+    function getPointerDB() {
+      if (pointerDbPromise) return pointerDbPromise;
+      pointerDbPromise = new Promise((resolve, reject) => {
+        const req = indexedDB.open(FILE_POINTER_DB, FILE_POINTER_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(FILE_POINTER_STORE)) {
+            db.createObjectStore(FILE_POINTER_STORE, { keyPath: 'key' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      return pointerDbPromise;
+    }
+
+    // Clear old file handle on launcher load
+    const initialCleanup = (async () => {
+      purgeBrowserStorage();
+      try {
+        indexedDB.deleteDatabase('AR_VPRS_REGISTRY_DB');
+        const db = await getPointerDB();
+        await new Promise((resolve) => {
+          const tx = db.transaction(FILE_POINTER_STORE, 'readwrite');
+          tx.objectStore(FILE_POINTER_STORE).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+      } catch (_) {}
+    })();
+
+    // Transfer strictly the OS FileSystemFileHandle pointer so company.html reads/writes the exact .VPRS file on disk
+    async function bindDiskFileHandle(fileHandle) {
+      purgeBrowserStorage();
+      const db = await getPointerDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(FILE_POINTER_STORE, 'readwrite');
+        tx.objectStore(FILE_POINTER_STORE).put({
+          key: 'current_vprs',
+          handle: fileHandle
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function buildEmptyVPRSContainer() {
+      const now = new Date().toISOString();
+      return {
+        format: VPRS_MAGIC_HEADER,
+        version: '1.0.0',
+        containerId: 'vprs_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8),
+        createdAt: now,
+        updatedAt: now,
+        isInitialized: false,
+        activeCompanyId: null,
+        activeSession: null,
+        companies: [],
+        companyProfile: null,
+        assets: {
+          logo: null,
+          images: {},
+          documents: {}
+        },
+        tables: {
+          users: [],
+          customers: [],
+          suppliers: [],
+          inventory: [],
+          sales_invoices: [],
+          purchase_bills: [],
+          expenses: [],
+          income: [],
+          banking_accounts: [],
+          banking_transactions: [],
+          ledger_accounts: [],
+          journal_entries: [],
+          gst_returns: [],
+          payroll_employees: [],
+          payroll_runs: [],
+          settings: {}
+        }
+      };
+    }
+
+    function validateVPRSArchive(data) {
+      if (!data || typeof data !== 'object') {
+        return { valid: false, reason: 'File content is not a valid .VPRS database object.' };
+      }
+      if (data.format !== VPRS_MAGIC_HEADER) {
+        return { valid: false, reason: 'Invalid file format. Please choose a valid .VPRS database file.' };
+      }
+      if (!data.containerId || (typeof data.tables !== 'object' && !Array.isArray(data.companies))) {
+        return { valid: false, reason: 'Corrupted .VPRS archive structure.' };
+      }
+      return { valid: true };
+    }
+
+    function showAlert(type, title, message) {
+      const alertBox = document.getElementById('launcher-alert');
+      const alertIcon = document.getElementById('alert-icon');
+      const alertTitle = document.getElementById('alert-title');
+      const alertMessage = document.getElementById('alert-message');
+
+      alertBox.classList.remove(
+        'hidden',
+        'border-red-200', 'text-red-900',
+        'border-amber-200', 'text-amber-900',
+        'border-emerald-200', 'text-emerald-900'
+      );
+
+      if (type === 'error') {
+        alertBox.classList.add('border-red-200', 'text-red-900');
+        alertIcon.innerHTML = `<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      } else if (type === 'warning') {
+        alertBox.classList.add('border-amber-200', 'text-amber-900');
+        alertIcon.innerHTML = `<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+      } else {
+        alertBox.classList.add('border-emerald-200', 'text-emerald-900');
+        alertIcon.innerHTML = `<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      }
+
+      alertTitle.textContent = title;
+      alertMessage.textContent = message;
+    }
+
+    function dismissAlert() {
+      document.getElementById('launcher-alert').classList.add('hidden');
+    }
+
+    function ensureFileSystemSupport() {
+      if (typeof window.showSaveFilePicker !== 'function' || typeof window.showOpenFilePicker !== 'function') {
+        showAlert(
+          'error',
+          'Native File System API Unavailable',
+          'Please launch this desktop software in Chromium, Edge, Chrome, or the Electron/Tauri desktop shell.'
+        );
+        return false;
+      }
+      return true;
+    }
+
+    // 1. Create File: Save empty .VPRS container to disk -> go immediately to company.html
+    async function handleCreateFile() {
+      dismissAlert();
+      await initialCleanup;
+      if (!ensureFileSystemSupport()) return;
+
+      let fileHandle;
+      try {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: 'CompanyDatabase.VPRS',
+          types: [
+            {
+              description: 'AR Billing .VPRS Database Container',
+              accept: {
+                'application/x-vprs-database': ['.vprs', '.VPRS']
+              }
+            }
+          ]
+        });
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+        showAlert('error', 'Save Dialog Error', err.message || 'Unable to open Save File dialog.');
+        return;
+      }
+
+      try {
+        const emptyArchive = buildEmptyVPRSContainer();
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(emptyArchive));
+        await writable.close();
+
+        await bindDiskFileHandle(fileHandle);
+        window.location.replace('company.html');
+      } catch (err) {
+        showAlert('error', 'Failed to Create .VPRS File', err.message || 'Unable to write container to disk.');
+      }
+    }
+
+    // 2. Select Existing File: Validate .VPRS on disk without overwriting -> go immediately to company.html
+    async function handleSelectExistingFile() {
+      dismissAlert();
+      await initialCleanup;
+      if (!ensureFileSystemSupport()) return;
+
+      let fileHandles;
+      try {
+        fileHandles = await window.showOpenFilePicker({
+          multiple: false,
+          types: [
+            {
+              description: 'AR Billing .VPRS Database Container',
+              accept: {
+                'application/x-vprs-database': ['.vprs', '.VPRS']
+              }
+            }
+          ]
+        });
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+        showAlert('error', 'Open Dialog Error', err.message || 'Unable to open file picker.');
+        return;
+      }
+
+      if (!fileHandles || fileHandles.length === 0) return;
+      const fileHandle = fileHandles[0];
+
+      try {
+        if (!fileHandle.name.toLowerCase().endsWith('.vprs')) {
+          throw new Error('Please select a valid .VPRS database file.');
+        }
+
+        const file = await fileHandle.getFile();
+        if (file.size === 0) {
+          throw new Error('The selected .VPRS file is empty (0 bytes).');
+        }
+
+        let parsedArchive;
+        try {
+          parsedArchive = JSON.parse(await file.text());
+        } catch (_) {
+          throw new Error('Corrupted .VPRS file: unable to decode archive.');
+        }
+
+        const check = validateVPRSArchive(parsedArchive);
+        if (!check.valid) {
+          throw new Error(check.reason);
+        }
+
+        await bindDiskFileHandle(fileHandle);
+        window.location.replace('company.html');
+      } catch (err) {
+        showAlert('error', 'Cannot Open .VPRS File', err.message || 'The selected file is invalid or inaccessible.');
+      }
+    }
+
+    document.getElementById('btn-create-file').addEventListener('click', handleCreateFile);
+    document.getElementById('btn-select-file').addEventListener('click', handleSelectExistingFile);
+  </script>
+</body>
+</html>
